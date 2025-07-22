@@ -1,13 +1,15 @@
-import '../app/globals.css'
+import Navbar from '../../components/Navbar'
+import Footer from '../../components/Footer'
+import '../../app/globals.css'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="bg-gray-50 text-gray-900">
+    <>
+        <Navbar />
         <div className="flex min-h-screen">
           <main className="flex-1">{children}</main>
         </div>
-      </body>
-    </html>
+        <Footer />
+        </>
   )
 }
