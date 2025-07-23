@@ -4,6 +4,11 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
+import { loginUser } from '@/utils/userApi'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { loginFormSchema } from '@/validations/login.form'
 
 type LoginForm = {
   email: string
@@ -16,10 +21,13 @@ export default function LoginPage() {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting }
-  } = useForm<LoginForm>()
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginFormSchema)
+  })
 
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter()
 
   const togglePasswordVisibility = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -29,10 +37,23 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     try {
       console.log('Logging in with:', data)
+      const response = await loginUser(data)
+      console.log('Login response:', response)
+      
+      if (response.token) {
+        localStorage.setItem('token', response.token)
+        localStorage.setItem('user', JSON.stringify(response.user))
+        toast.success('Login successful!')
+        router.push('/feedpage')
+      } else {
+        throw new Error('Login failed. Please try again.')
+      }
       reset()
+
       setError('')
-    } catch (err) {
+    } catch (err:any) {
       setError('Login failed. Please try again.')
+      toast.error(err.message || 'Login failed. Please try again.')
       console.error(err)
     }
   }

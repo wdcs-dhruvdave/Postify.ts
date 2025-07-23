@@ -4,33 +4,41 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { useState } from 'react'
-
-
-type SignupForm = {
-  username: string
-  email: string
-  password: string
-}
-
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
+import { registerUser } from '@/utils/userApi' 
+import { SignupForm } from '@/types/auth.types' 
+import { zodResolver } from '@hookform/resolvers/zod'
+import { signupFormSchema } from '@/validations/signup.form'
 export default function RegisterPage() {
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting }
-  } = useForm<SignupForm>()
-  const [error, setError] = useState('')
+  } = useForm<SignupForm>(
+    {
+      resolver : zodResolver(signupFormSchema)
+    }
+  )
+
   const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter()
 
   const onSubmit = async (data: SignupForm) => {
     try {
-      console.log('Registering with:', data)
-      reset()
-      setError('')
-    } catch (err) {
-      setError('Registration failed. Please try again.')
+      await registerUser(data)
+
+      toast.success('Registration successful!')
+      reset() 
+      router.push('/login')
+
+    } catch (err: any) {
+
+      toast.error(err.message)
     }
   }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -40,6 +48,7 @@ export default function RegisterPage() {
     >
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-center text-blue-700 mb-6">Create an Account</h2>
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
@@ -47,8 +56,9 @@ export default function RegisterPage() {
               type="text"
               {...register('username', { required: 'Username is required' })}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Your name"
+              placeholder="Your unique username"
             />
+            {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -82,7 +92,7 @@ export default function RegisterPage() {
             />
             <button
               type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-blue-600 hover:underline"
+              className="absolute right-3 top-9 text-sm text-blue-600 hover:underline"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? 'Hide' : 'Show'}
@@ -91,9 +101,10 @@ export default function RegisterPage() {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 transition"
+            disabled={isSubmitting}
+            className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 transition disabled:bg-blue-300"
           >
-            Register
+            {isSubmitting ? 'Registering...' : 'Register'}
           </button>
         </form>
         <p className="text-center text-sm text-gray-600 mt-6">
