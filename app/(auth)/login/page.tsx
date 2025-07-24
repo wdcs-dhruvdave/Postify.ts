@@ -51,11 +51,13 @@ export default function LoginPage() {
       reset()
 
       setError('')
-    } catch (err:any) {
-      setError('Login failed. Please try again.')
-      toast.error(err.message || 'Login failed. Please try again.')
-      console.error(err)
+    } catch (err: unknown) {
+    if (err instanceof Error) {
+      toast.error(err.message)
+    } else {
+      toast.error('An unexpected error occurred.')
     }
+  }
   }
 
   return (

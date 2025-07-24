@@ -27,4 +27,4 @@ export const signupFormSchema = z.object({
     .optional(),
 });
 
-export type RegisterForm = z.infer<typeof registerFormSchema>;
+export type RegisterForm = z.infer<typeof signupFormSchema>;

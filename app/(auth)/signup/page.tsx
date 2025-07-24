@@ -33,10 +33,13 @@ export default function RegisterPage() {
       reset() 
       router.push('/login')
 
-    } catch (err: any) {
-
+    } catch (err: unknown) {
+    if (err instanceof Error) {
       toast.error(err.message)
+    } else {
+      toast.error('An unexpected error occurred.')
     }
+  }
   }
 
   return (

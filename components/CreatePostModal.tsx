@@ -7,10 +7,11 @@ import { X } from 'lucide-react'
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 
-interface CreatePostModalProps {
+type CreatePostModalProps = {
   isOpen: boolean;
   onClose: () => void;
-}
+  onPostCreated: () => Promise<void>; 
+};
 
 export const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
 
@@ -28,10 +29,15 @@ export const CreatePostModal = ({ isOpen, onClose }: CreatePostModalProps) => {
         reset();
         onClose();
     }
-    catch(error: any){
-        toast.error(error.message);
-        reset();
+    catch (err: unknown) {
+    if (err instanceof Error) {
+      toast.error(err.message)
+      reset()
+    } else {
+      toast.error('An unexpected error occurred.')
+      reset()
     }
+  }
   }
 
   return (

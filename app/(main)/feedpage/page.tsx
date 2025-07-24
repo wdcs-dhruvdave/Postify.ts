@@ -20,9 +20,13 @@ export default function FeedPage() {
     try {
       const fetchedPosts = await getPosts(); 
       setPosts(fetchedPosts.posts);
-    } catch (error: any) {
-      toast.error(error.message || 'Could not fetch posts.');
-    } finally {
+    } catch (err: unknown) {
+    if (err instanceof Error) {
+      toast.error(err.message)
+    } else {
+      toast.error('Colud not Fetch Posts.')
+    }
+  } finally {
       setLoading(false);
     }
   };

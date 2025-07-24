@@ -1,4 +1,3 @@
-// src/types/post.types.ts
 export type PostAuthor = {
   name: string;
   username: string;
@@ -7,7 +6,8 @@ export type PostAuthor = {
 
 export type Post = {
   id: string;
-  author: PostAuthor; // Use the PostAuthor type here
+  author: PostAuthor; 
+  title: string;
   content_text: string;
   image_url?: string;
   created_at: string;
