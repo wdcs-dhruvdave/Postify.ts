@@ -38,8 +38,13 @@
     "typescript": "^5.8.3"
   },
   "lint-staged": {
-  "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
-  "*.{json,md,html,css}": ["prettier --write"]
+  "*.{js,ts,jsx,tsx}": [
+    "echo '🧹 Running ESLint...'",
+    "eslint --fix",
+    "echo '✨ Formatting with Prettier...'",
+    "prettier --write"
+  ]
 }
+
 
 }
