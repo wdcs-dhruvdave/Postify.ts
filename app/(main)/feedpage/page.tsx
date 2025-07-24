@@ -1,32 +1,31 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { PostCard } from '@/components/Postcard'
-import { PostCardSkeleton } from '@/components/PostCardSkeleton'
-import { Post } from '@/types/post.types'
-import { CreatePostModal } from '@/components/CreatePostModal'
-import { getPosts } from '@/utils/postApi' 
-import toast from 'react-hot-toast'
-
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { PostCard } from "@/components/Postcard";
+import { PostCardSkeleton } from "@/components/PostCardSkeleton";
+import { Post } from "@/types/post.types";
+import { CreatePostModal } from "@/components/CreatePostModal";
+import { getPosts } from "@/utils/postApi";
+import toast from "react-hot-toast";
 
 export default function FeedPage() {
   const [posts, setPosts] = useState<Post[]>([]);
-  console.log("🚀 ~ FeedPage ~ posts:", posts)
+  console.log("🚀 ~ FeedPage ~ posts:", posts);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchPosts = async () => {
     try {
-      const fetchedPosts = await getPosts(); 
+      const fetchedPosts = await getPosts();
       setPosts(fetchedPosts.posts);
     } catch (err: unknown) {
-    if (err instanceof Error) {
-      toast.error(err.message)
-    } else {
-      toast.error('Colud not Fetch Posts.')
-    }
-  } finally {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Colud not Fetch Posts.");
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -34,13 +33,14 @@ export default function FeedPage() {
   useEffect(() => {
     fetchPosts();
   }, []);
+  console.log("test");
 
   return (
     <>
-      <CreatePostModal 
-        isOpen={isModalOpen} 
+      <CreatePostModal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onPostCreated={fetchPosts} 
+        onPostCreated={fetchPosts}
       />
 
       <div className="min-h-screen bg-gradient-to-br from-white to-blue-50">
@@ -55,15 +55,10 @@ export default function FeedPage() {
             </button>
           </div>
 
-          <motion.div
-          >
-            {loading ? (
-              [...Array(3)].map((_, i) => <PostCardSkeleton key={i} />)
-            ) : (
-              posts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))
-            )}
+          <motion.div>
+            {loading
+              ? [...Array(3)].map((_, i) => <PostCardSkeleton key={i} />)
+              : posts.map((post) => <PostCard key={post.id} post={post} />)}
           </motion.div>
         </main>
       </div>
