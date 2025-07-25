@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
+import { isAuthenticated } from '@/utils/auth'
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -11,8 +12,7 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
+    if (isAuthenticated()) {
       setIsLoggedIn(true)
     }
   }, [pathname]) 

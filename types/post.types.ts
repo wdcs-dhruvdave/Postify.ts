@@ -14,6 +14,8 @@ export type Post = {
   likes_count: number;
   comments_count: number;
   dislikes_count: number;
+  user_has_disliked: boolean;
+  user_has_liked: boolean;
 };
 
 export type PostFormData = {

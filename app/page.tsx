@@ -4,8 +4,10 @@ import Footer from '@/components/Footer'
 import Navbar from '@/components/Navbar'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { isAuthenticated } from '@/utils/auth'
 
 export default function HomePage() {
+  const isAuth = isAuthenticated()
   return (
     <>
       <Navbar />
@@ -40,7 +42,7 @@ export default function HomePage() {
             transition={{ delay: 0.6 }}
             className="mb-10"
           >
-            <Link href="/signup">
+            <Link href={isAuth ? '/feedpage' : '/signup'}>
               <button className="px-6 py-3 bg-blue-600 text-white font-medium rounded-full shadow-lg hover:bg-blue-700 transition">
                 Get Started
               </button>
