@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { Comment } from '@/types/comment.type';
-import { getComments, createComment } from '../utils/postApi';
-import Image from 'next/image';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Send } from "lucide-react";
+import toast from "react-hot-toast";
+import { Comment } from "@/types/comment.type";
+import { getComments, createComment } from "../utils/postApi";
+import Image from "next/image";
 
 interface CommentModalProps {
   postId: string | null;
@@ -15,7 +15,7 @@ interface CommentModalProps {
 
 export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState('');
+  const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,7 +26,9 @@ export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
           const fetchedComments = await getComments(postId);
           setComments(fetchedComments);
         } catch (error) {
-          toast.error('Could not fetch comments.');
+          if (error instanceof Error) {
+            toast.error(error.message || "Failed to fetch post.");
+          }
         } finally {
           setLoading(false);
         }
@@ -42,9 +44,11 @@ export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
     try {
       const createdComment = await createComment(postId, newComment);
       setComments((prevComments) => [...prevComments, createdComment]);
-      setNewComment('');
+      setNewComment("");
     } catch (error) {
-      toast.error('Failed to post comment.');
+      if (error instanceof Error) {
+        toast.error(error.message || "Failed to fetch feed.");
+      }
     }
   };
 
@@ -67,22 +71,42 @@ export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
           >
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-xl font-bold text-blue-700">Comments</h3>
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={24} />
+              </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {loading ? <p>Loading...</p> : comments.map(comment => (
-                <div key={comment.id} className="flex items-start space-x-3">
-                  <Image src={comment.author.avatar_url || '/default-avatar.png'} alt={comment.author.name} width={32} height={32} className="rounded-full" />
-                  <div className="flex-1 bg-gray-100 p-3 rounded-lg">
-                    <p className="font-semibold text-sm text-gray-800">{comment.author.username}</p>
-                    <p className="text-gray-700">{comment.content_text}</p>
+              {loading ? (
+                <p>Loading...</p>
+              ) : (
+                comments.map((comment) => (
+                  <div key={comment.id} className="flex items-start space-x-3">
+                    <Image
+                      src={comment.author.avatar_url || "/default-avatar.png"}
+                      alt={comment.author.name}
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                    />
+                    <div className="flex-1 bg-gray-100 p-3 rounded-lg">
+                      <p className="font-semibold text-sm text-gray-800">
+                        {comment.author.username}
+                      </p>
+                      <p className="text-gray-700">{comment.content_text}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
 
-            <form onSubmit={handleSubmitComment} className="p-4 border-t flex items-center space-x-2">
+            <form
+              onSubmit={handleSubmitComment}
+              className="p-4 border-t flex items-center space-x-2"
+            >
               <input
                 type="text"
                 value={newComment}
@@ -90,7 +114,10 @@ export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
                 placeholder="Write a comment..."
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <button type="submit" className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition">
+              <button
+                type="submit"
+                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition"
+              >
                 <Send size={20} />
               </button>
             </form>

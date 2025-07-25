@@ -1,17 +1,17 @@
 import axios from "axios";
-import { CreatePostModal } from "@/components/CreatePostModal";
 import { PostFormData } from "@/types/post.types";
+import toast from "react-hot-toast";
 
 const apiClient = axios.create({
-    baseURL : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`,
-    headers: {
-        'Content-Type': 'application/json',
-    }
-})
+  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -19,78 +19,88 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
-export const createPost = async(data: PostFormData) => {
-    try{
-        const response = await apiClient.post('/posts', data);
-        return response.data;
+export const createPost = async (data: PostFormData) => {
+  try {
+    const response = await apiClient.post("/posts", data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      toast(error.message || "Failed to getfeed.");
     }
-    catch(error: any){
-        throw new Error(error.response?.data?.message || 'Post creation failed.');
-    }
-}
+  }
+};
 
 export const getCategories = async () => {
-  try{
-    const response = await apiClient.get('/posts/categories');
+  try {
+    const response = await apiClient.get("/posts/categories");
     return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to fetch categories.");
+    }
   }
-  catch(error: any){
-    throw new Error(error.response?.data?.message || 'Failed to fetch categories.');
-  }
-}
+};
 
 export const getPosts = async () => {
   try {
-    const response = await apiClient.get('/posts', {
+    const response = await apiClient.get("/posts", {
       params: {
         _: new Date().getTime(),
       },
     });
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch posts.');
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to fetch post.");
+    }
   }
 };
 
 export const getFeed = async () => {
   try {
-    const response = await apiClient.get('/posts/feed'); 
-    console.log("🚀 ~ getFeed ~ response:", response)
+    const response = await apiClient.get("/posts/feed");
+    console.log("🚀 ~ getFeed ~ response:", response);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch feed.');
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to fetch feed.");
+    }
   }
 };
 
-export const likePost = async (postId : string) =>{
-  try{
+export const likePost = async (postId: string) => {
+  try {
     const response = await apiClient.post(`/posts/${postId}/like`);
-    return response.data
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to fetch likes.");
+    }
   }
-  catch(error:any){
-    throw new Error(error.response?.data?.message || 'Failed to Like The Post')
-  }
-}
+};
 
-export const unlikePost = async (postId:string) =>{
-  try{
-    const response = await apiClient.delete(`/posts/${postId}/like`)
-    return response.data
+export const unlikePost = async (postId: string) => {
+  try {
+    const response = await apiClient.delete(`/posts/${postId}/like`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to Unlike.");
+    }
   }
-  catch(error:any){
-    throw new Error(error.response?.data?.message || 'Failed to Unlike The Post')
-  }
-}
+};
 
 export const dislikePost = async (postId: string) => {
   try {
     const response = await apiClient.post(`/posts/${postId}/dislike`);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to Dislike The Post');
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to dislike.");
+    }
   }
 };
 
@@ -98,8 +108,10 @@ export const undislikePost = async (postId: string) => {
   try {
     const response = await apiClient.delete(`/posts/${postId}/dislike`);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to Remove Dislike');
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to undislike.");
+    }
   }
 };
 
@@ -109,6 +121,8 @@ export const getComments = async (postId: string) => {
 };
 
 export const createComment = async (postId: string, content_text: string) => {
-  const response = await apiClient.post(`/comments/${postId}`, { content_text });
+  const response = await apiClient.post(`/comments/${postId}`, {
+    content_text,
+  });
   return response.data;
 };
