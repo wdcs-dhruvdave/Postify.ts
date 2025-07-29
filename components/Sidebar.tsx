@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Home, FileText, User, LogOut } from 'lucide-react'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home, FileText, User, LogOut } from "lucide-react";
 
 export default function Sidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   const navItems = [
-    { name: 'Home', href: '/', icon: <Home size={20} /> },
-    { name: 'Posts', href: '/posts', icon: <FileText size={20} /> },
-    { name: 'Profile', href: '/profile', icon: <User size={20} /> },
-  ]
+    { name: "Home", href: "/feedpage", icon: <Home size={20} /> },
+    { name: "Posts", href: "/posts", icon: <FileText size={20} /> },
+    { name: "Profile", href: "/profile", icon: <User size={20} /> },
+  ];
 
   return (
     <aside className="h-screen w-64 bg-white border-r fixed top-0 left-0 shadow-sm z-40">
@@ -25,7 +25,7 @@ export default function Sidebar() {
             key={item.name}
             href={item.href}
             className={`flex items-center px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition ${
-              pathname === item.href ? 'bg-gray-100 font-semibold' : ''
+              pathname === item.href ? "bg-gray-100 font-semibold" : ""
             }`}
           >
             <span className="mr-3">{item.icon}</span>
@@ -39,5 +39,5 @@ export default function Sidebar() {
         </button>
       </nav>
     </aside>
-  )
+  );
 }

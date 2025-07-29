@@ -3,7 +3,7 @@ import { PostFormData } from "@/types/post.types";
 import toast from "react-hot-toast";
 
 const apiClient = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`,
+  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL}/`,
   headers: {
     "Content-Type": "application/json",
   },

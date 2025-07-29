@@ -1,136 +1,152 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { useForm } from 'react-hook-form'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import toast from 'react-hot-toast'
-import { loginUser } from '@/utils/userApi'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { loginFormSchema } from '@/validations/login.form'
-
-type LoginForm = {
-  email: string
-  password: string
-}
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { useState } from "react"; // FC is a type for Function Components
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { loginUser } from "@/utils/authApi"; // Or your correct path
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginFormSchema } from "@/validations/login.form"; // Or your correct path
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { LoginForm } from "@/types/auth.types"; // Or your correct path
 
 export default function LoginPage() {
   const {
     register,
     handleSubmit,
-    reset,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
-    resolver: zodResolver(loginFormSchema)
-  })
+    resolver: zodResolver(loginFormSchema),
+  });
 
-  const [error, setError] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const router = useRouter()
-
-  const togglePasswordVisibility = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setShowPassword(prev => !prev)
-  }
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const router = useRouter();
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      console.log('Logging in with:', data)
-      const response = await loginUser(data)
-      console.log('Login response:', response)
-      
-      if (response.token) {
-        localStorage.setItem('token', response.token)
-        localStorage.setItem('user', JSON.stringify(response.user))
-        toast.success('Login successful!')
-        router.push('/feedpage')
-      } else {
-        throw new Error('Login failed. Please try again.')
-      }
-      reset()
-
-      setError('')
+      const response = await loginUser(data);
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response.user));
+      toast.success("Login successful!");
+      router.push("/feedpage");
     } catch (err: unknown) {
-    if (err instanceof Error) {
-      toast.error(err.message)
-    } else {
-      toast.error('An unexpected error occurred.')
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
     }
-  }
-  }
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-blue-50 px-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen flex items-center justify-center bg-gray-50 p-4"
     >
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-center text-blue-700 mb-6">Login to Postify</h2>
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link
+            href="/"
+            className="inline-block text-4xl font-bold text-blue-600"
+          >
+            Postify
+          </Link>
+          <p className="text-gray-500 mt-2">
+            Welcome back! Please enter your details.
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              {...register('email', {
-                required: 'Email is required',
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Invalid email address'
-                }
-              })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="you@example.com"
-            />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-white p-8 rounded-xl shadow-lg border border-gray-200"
+        >
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="relative">
+              <Mail
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+              />
               <input
-                type={showPassword ? 'text' : 'password'}
-                {...register('password', {
-                  required: 'Password is required',
-                  minLength: {
-                    value: 6,
-                    message: 'Password must be at least 6 characters'
-                  }
-                })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="email"
+                {...register("email")}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
+                placeholder="you@example.com"
+              />
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            <div className="relative">
+              <Lock
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <input
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+                className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
                 placeholder="••••••••"
               />
               <button
-                onClick={togglePasswordVisibility}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-blue-600 hover:underline"
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {showPassword ? 'Hide' : 'Show'}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
-            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white py-2.5 rounded-md font-semibold hover:bg-blue-700 transition shadow-sm disabled:opacity-50"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Logging in..." : "Login"}
+            </button>
+          </form>
+
+          {/* <div className="flex items-center my-6">
+              <div className="flex-grow border-t border-gray-300"></div>
+              <span className="flex-shrink mx-4 text-gray-400 text-sm">OR</span>
+              <div className="flex-grow border-t border-gray-300"></div>
           </div>
 
-          {error && <p className="text-red-500 text-center">{error}</p>}
+          <div className="space-y-3">
+              <button type="button" className="w-full flex items-center justify-center py-2.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                  <GoogleIcon />
+                  <span className="ml-3">Continue with Google</span>
+              </button>
+              <button type="button" className="w-full flex items-center justify-center py-2.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                  <Github className="h-5 w-5" />
+                  <span className="ml-3">Continue with GitHub</span>
+              </button>
+          </div> */}
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 transition"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-gray-600 mt-6">
-          Don’t have an account?{' '}
-          <Link href="/signup" className="text-blue-600 hover:underline">
-            Register
-          </Link>
-        </p>
+          <p className="text-center text-sm text-gray-600 mt-8">
+            Don’t have an account?{" "}
+            <Link
+              href="/signup"
+              className="font-semibold text-blue-600 hover:underline"
+            >
+              Register
+            </Link>
+          </p>
+        </motion.div>
       </div>
     </motion.div>
-  )
+  );
 }

@@ -1,133 +1,104 @@
-'use client'
+"use client";
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import toast from "react-hot-toast";
 import { PostCard } from "@/components/Postcard";
 import { PostCardSkeleton } from "@/components/PostCardSkeleton";
-import { Post } from "@/types/post.types";
 import { CreatePostModal } from "@/components/CreatePostModal";
-import { getFeed, likePost, unlikePost, dislikePost, undislikePost } from "@/utils/postApi";
 import { CommentModal } from "@/components/CommentModal";
+import { isAuthenticated } from "@/utils/auth";
+import { usePosts } from "@/utils/hooks/usePost";
+import { RightSidebar } from "@/components/RightSidebar";
+import { WelcomeBanner } from "@/components/WelcomeBanner";
+import { CreatePostWidget } from "@/components/CreatePostWidget";
+import { Post } from "@/types/post.types";
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.2 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
 export default function FeedPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [viewingCommentsOfPostId, setViewingCommentsOfPostId] = useState<string | null>(null);
+  const { posts, loading, addPost, toggleLike, toggleDislike } = usePosts();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [viewingCommentsOfPostId, setViewingCommentsOfPostId] = useState<
+    string | null
+  >(null);
 
-  const fetchFeed = async () => {
-    try {
-      const fetchedPosts = await getFeed();
-      setPosts(fetchedPosts);
-    } catch (err: unknown) {
-      if (err instanceof Error) toast.error(err.message);
-      else toast.error("Could not fetch posts.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // State to manage login status, avoids hydration errors
+  const [loggedIn, setLoggedIn] = useState(false);
 
+  // This effect runs only on the client-side after the component has mounted
   useEffect(() => {
-    fetchFeed();
+    setLoggedIn(isAuthenticated());
   }, []);
-
-  const handlePostCreated = (newPost: Post) => {
-    setPosts((prevPosts) => [newPost, ...prevPosts]);
-  };
-
-  const handleLikeToggle = (postId: string) => {
-    const originalPosts = [...posts];
-    const post = originalPosts.find(p => p.id === postId);
-    if (!post) return;
-
-    setPosts(posts.map(p =>
-      p.id === postId ? {
-        ...p,
-        likes_count: p.user_has_liked ? p.likes_count - 1 : p.likes_count + 1,
-        dislikes_count: p.user_has_disliked ? p.dislikes_count - 1 : p.dislikes_count,
-        user_has_liked: !p.user_has_liked,
-        user_has_disliked: false,
-      } : p
-    ));
-
-    const apiCall = post.user_has_liked ? unlikePost : likePost;
-    apiCall(postId).catch(() => {
-      toast.error("Failed to update like.");
-      setPosts(originalPosts);
-    });
-  };
-  
-  const handleDislikeToggle = (postId: string) => {
-    const originalPosts = [...posts];
-    const post = originalPosts.find(p => p.id === postId);
-    if (!post) return;
-
-    setPosts(posts.map(p =>
-      p.id === postId ? {
-        ...p,
-        dislikes_count: p.user_has_disliked ? p.dislikes_count - 1 : p.dislikes_count + 1,
-        likes_count: p.user_has_liked ? p.likes_count - 1 : p.likes_count,
-        user_has_disliked: !p.user_has_disliked,
-        user_has_liked: false,
-      } : p
-    ));
-
-    const apiCall = post.user_has_disliked ? undislikePost : dislikePost;
-    apiCall(postId).catch(() => {
-      toast.error("Failed to update dislike.");
-      setPosts(originalPosts);
-    });
-  };
 
   return (
     <>
-    <CommentModal 
+      <CommentModal
         postId={viewingCommentsOfPostId}
-        onClose={() => setViewingCommentsOfPostId(null)} 
+        onClose={() => setViewingCommentsOfPostId(null)}
       />
-      <CreatePostModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onPostCreated={handlePostCreated}
-      />
+      {loggedIn && (
+        <CreatePostModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onPostCreated={addPost}
+        />
+      )}
       <div className="min-h-screen bg-gradient-to-br from-white to-blue-50">
-        <main className="max-w-2xl mx-auto py-8 px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-blue-700">Home Feed</h1>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition"
-            >
-              Create Post
-            </button>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* --- Left Sidebar (Placeholder) --- */}
+            <aside className="hidden lg:block lg:col-span-1">
+              {/* You can place your LeftSidebar component here */}
+            </aside>
+
+            {/* --- Main Feed Content (Center Column) --- */}
+            <main className="col-span-1 lg:col-span-2">
+              {loggedIn ? (
+                <CreatePostWidget onClick={() => setIsCreateModalOpen(true)} />
+              ) : (
+                <WelcomeBanner />
+              )}
+
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {loading ? (
+                  [...Array(3)].map((_, i) => <PostCardSkeleton key={i} />)
+                ) : posts.length > 0 ? (
+                  posts.map((post: Post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onLikeToggle={toggleLike}
+                      onDislikeToggle={toggleDislike}
+                      onCommentClick={setViewingCommentsOfPostId}
+                    />
+                  ))
+                ) : (
+                  // Empty State for logged-in users with no posts in their feed
+                  <div className="text-center py-16 px-4 bg-white rounded-lg shadow-md">
+                    <h3 className="text-xl font-semibold text-gray-800">
+                      Your Feed is Empty
+                    </h3>
+                    <p className="text-gray-500 mt-2">
+                      Follow some users to see their posts here!
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            </main>
+
+            {/* --- Right Sidebar --- */}
+            <div className="hidden lg:block lg:col-span-1">
+              <RightSidebar />
+            </div>
           </div>
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {loading
-              ? [...Array(3)].map((_, i) => <PostCardSkeleton key={i} />)
-              : posts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onLikeToggle={handleLikeToggle}
-                    onDislikeToggle={handleDislikeToggle}
-                    onCommentClick={setViewingCommentsOfPostId}
-                  />
-                ))}
-          </motion.div>
-        </main>
+        </div>
       </div>
     </>
   );

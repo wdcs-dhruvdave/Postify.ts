@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import Footer from '@/components/Footer'
-import Navbar from '@/components/Navbar'
-import { motion } from 'framer-motion'
-import Link from 'next/link'
-import { isAuthenticated } from '@/utils/auth'
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { isAuthenticated } from "@/utils/auth";
 
 export default function HomePage() {
-  const isAuth = isAuthenticated()
+  const isAuth = isAuthenticated();
   return (
     <>
       <Navbar />
@@ -33,7 +33,8 @@ export default function HomePage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            Your modern social platform to post updates, connect with others, and build your community.
+            Your modern social platform to post updates, connect with others,
+            and build your community.
           </motion.p>
 
           <motion.div
@@ -42,7 +43,7 @@ export default function HomePage() {
             transition={{ delay: 0.6 }}
             className="mb-10"
           >
-            <Link href={isAuth ? '/feedpage' : '/signup'}>
+            <Link href={isAuth ? "/feedpage" : "/feedpage"}>
               <button className="px-6 py-3 bg-blue-600 text-white font-medium rounded-full shadow-lg hover:bg-blue-700 transition">
                 Get Started
               </button>
@@ -58,8 +59,12 @@ export default function HomePage() {
             transition={{ delay: 0.3, duration: 0.4 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-xl font-semibold text-blue-700 mb-2">📝 Create Posts</h3>
-            <p className="text-gray-600">Easily share your ideas and updates with the world.</p>
+            <h3 className="text-xl font-semibold text-blue-700 mb-2">
+              📝 Create Posts
+            </h3>
+            <p className="text-gray-600">
+              Easily share your ideas and updates with the world.
+            </p>
           </motion.div>
 
           <motion.div
@@ -69,8 +74,12 @@ export default function HomePage() {
             transition={{ delay: 0.4, duration: 0.4 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-xl font-semibold text-blue-700 mb-2">👥 Follow Users</h3>
-            <p className="text-gray-600">Connect and follow others to build your network.</p>
+            <h3 className="text-xl font-semibold text-blue-700 mb-2">
+              👥 Follow Users
+            </h3>
+            <p className="text-gray-600">
+              Connect and follow others to build your network.
+            </p>
           </motion.div>
 
           <motion.div
@@ -80,8 +89,12 @@ export default function HomePage() {
             transition={{ delay: 0.5, duration: 0.4 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-xl font-semibold text-blue-700 mb-2">📸 Media Uploads</h3>
-            <p className="text-gray-600">Attach images or videos to enrich your content.</p>
+            <h3 className="text-xl font-semibold text-blue-700 mb-2">
+              📸 Media Uploads
+            </h3>
+            <p className="text-gray-600">
+              Attach images or videos to enrich your content.
+            </p>
           </motion.div>
 
           <motion.div
@@ -91,8 +104,12 @@ export default function HomePage() {
             transition={{ delay: 0.6, duration: 0.4 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-xl font-semibold text-blue-700 mb-2">💬 Comments & Likes</h3>
-            <p className="text-gray-600">Engage with posts using likes and comments.</p>
+            <h3 className="text-xl font-semibold text-blue-700 mb-2">
+              💬 Comments & Likes
+            </h3>
+            <p className="text-gray-600">
+              Engage with posts using likes and comments.
+            </p>
           </motion.div>
 
           <motion.div
@@ -102,8 +119,12 @@ export default function HomePage() {
             transition={{ delay: 0.7, duration: 0.4 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-xl font-semibold text-blue-700 mb-2">🔍 Explore Feed</h3>
-            <p className="text-gray-600">Discover trending content and new creators.</p>
+            <h3 className="text-xl font-semibold text-blue-700 mb-2">
+              🔍 Explore Feed
+            </h3>
+            <p className="text-gray-600">
+              Discover trending content and new creators.
+            </p>
           </motion.div>
 
           <motion.div
@@ -113,8 +134,12 @@ export default function HomePage() {
             transition={{ delay: 0.8, duration: 0.4 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-xl font-semibold text-blue-700 mb-2">🧑‍💼 User Profiles</h3>
-            <p className="text-gray-600">Showcase your posts, followers, and info on your profile.</p>
+            <h3 className="text-xl font-semibold text-blue-700 mb-2">
+              🧑‍💼 User Profiles
+            </h3>
+            <p className="text-gray-600">
+              Showcase your posts, followers, and info on your profile.
+            </p>
           </motion.div>
         </div>
 
@@ -125,32 +150,54 @@ export default function HomePage() {
           viewport={{ once: true }}
           className="max-w-4xl mx-auto mt-20 text-center"
         >
-          <h2 className="text-3xl font-bold text-gray-800 mb-6">How Postify Works</h2>
+          <h2 className="text-3xl font-bold text-gray-800 mb-6">
+            How Postify Works
+          </h2>
           <div className="grid md:grid-cols-3 gap-6 text-left">
             <div className="bg-white p-5 rounded-lg shadow">
-              <h4 className="font-semibold text-blue-600 mb-2">1. Create an Account</h4>
-              <p className="text-gray-600">Sign up with your email and set up your profile in seconds.</p>
+              <h4 className="font-semibold text-blue-600 mb-2">
+                1. Create an Account
+              </h4>
+              <p className="text-gray-600">
+                Sign up with your email and set up your profile in seconds.
+              </p>
             </div>
             <div className="bg-white p-5 rounded-lg shadow">
-              <h4 className="font-semibold text-blue-600 mb-2">2. Start Posting</h4>
-              <p className="text-gray-600">Share text, media, and engage with the community instantly.</p>
+              <h4 className="font-semibold text-blue-600 mb-2">
+                2. Start Posting
+              </h4>
+              <p className="text-gray-600">
+                Share text, media, and engage with the community instantly.
+              </p>
             </div>
             <div className="bg-white p-5 rounded-lg shadow">
-              <h4 className="font-semibold text-blue-600 mb-2">3. Grow Your Network</h4>
-              <p className="text-gray-600">Follow users, get followers, and expand your reach.</p>
+              <h4 className="font-semibold text-blue-600 mb-2">
+                3. Grow Your Network
+              </h4>
+              <p className="text-gray-600">
+                Follow users, get followers, and expand your reach.
+              </p>
             </div>
           </div>
         </motion.div>
 
         <div className="max-w-4xl mx-auto mt-20 text-center">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6">What Our Users Say</h2>
+          <h2 className="text-3xl font-bold text-gray-800 mb-6">
+            What Our Users Say
+          </h2>
           <div className="grid md:grid-cols-2 gap-6 text-left">
             <div className="bg-blue-50 p-6 rounded-lg shadow">
-              <p className="text-gray-700 mb-2 italic">&quot;Postify is the easiest way I&apos;ve ever shared updates and connected with my audience.”</p>
+              <p className="text-gray-700 mb-2 italic">
+                &quot;Postify is the easiest way I&apos;ve ever shared updates
+                and connected with my audience.”
+              </p>
               <p className="font-semibold text-gray-800">– Aditi Sharma</p>
             </div>
             <div className="bg-blue-50 p-6 rounded-lg shadow">
-              <p className="text-gray-700 mb-2 italic">&quot;It&apos;s like a mini social platform just for my niche community. I love it!&quot;</p>
+              <p className="text-gray-700 mb-2 italic">
+                &quot;It&apos;s like a mini social platform just for my niche
+                community. I love it!&quot;
+              </p>
               <p className="font-semibold text-gray-800">– Karan Patel</p>
             </div>
           </div>
@@ -163,7 +210,9 @@ export default function HomePage() {
           transition={{ delay: 0.3 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl font-semibold mb-4 text-gray-800">Ready to Join?</h2>
+          <h2 className="text-3xl font-semibold mb-4 text-gray-800">
+            Ready to Join?
+          </h2>
           <Link href="/signup">
             <button className="px-8 py-3 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition shadow-lg">
               Sign Up Now
@@ -173,5 +222,5 @@ export default function HomePage() {
       </section>
       <Footer />
     </>
-  )
+  );
 }
