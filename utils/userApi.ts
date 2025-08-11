@@ -101,3 +101,64 @@ export const getUserPosts = async (username: string) => {
     throw new Error("An unexpected error occurred while fetching posts.");
   }
 };
+
+type ProfileFormData = {
+  name?: string;
+  bio?: string;
+  avatar_url?: string;
+};
+export const updateUserProfile = async (data: ProfileFormData) => {
+  try {
+    const response = await apiClient.put("/users/profile", data);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to update profile.");
+    }
+  }
+};
+
+export const updateUserPrivacy = async (isPrivate: boolean) => {
+  try {
+    const response = await apiClient.put("/users/profile/privacy", {
+      is_private: isPrivate,
+    });
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to update privacy settings.");
+    }
+  }
+};
+
+export const getFollowers = async (username: string) => {
+  try {
+    const response = await apiClient.get(`/users/${username}/followers`);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to fetch followers.");
+    }
+  }
+};
+
+export const getFollowing = async (username: string) => {
+  try {
+    const response = await apiClient.get(`/users/${username}/following`);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to fetch following list.");
+    }
+  }
+};
+export const getRandomUsers = async () => {
+  try {
+    const response = await apiClient.get("/users/explore/suggestions");
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to fetch users.");
+    }
+  }
+};

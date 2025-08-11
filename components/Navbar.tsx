@@ -7,18 +7,19 @@ import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import { PublicUser } from "@/types/user.type"; // Assuming you have this type
+import { PublicUser } from "@/types/user.type";
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
 
   const [user, setUser] = useState<PublicUser | null>(null);
-
+  const [mounted, setMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const userData = localStorage.getItem("user");
     if (userData) {
       setUser(JSON.parse(userData));
@@ -46,11 +47,27 @@ export default function Navbar() {
   }) => (
     <Link
       href={href}
-      className={`transition ${pathname === href ? "text-blue-600" : "text-gray-700 hover:text-blue-500"}`}
+      className={`transition ${
+        pathname === href
+          ? "text-blue-600"
+          : "text-gray-700 hover:text-blue-500"
+      }`}
     >
       {children}
     </Link>
   );
+
+  if (!mounted) {
+    return (
+      <header className="bg-white/80 backdrop-blur-md border-b shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+          <Link href="/" className="text-2xl font-bold text-blue-600">
+            Postify
+          </Link>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="bg-white/80 backdrop-blur-md border-b shadow-sm sticky top-0 z-50">
@@ -62,11 +79,13 @@ export default function Navbar() {
         <nav className="hidden md:flex space-x-6 items-center text-sm font-medium">
           {user ? (
             <>
-              <NavLink href="/">Home</NavLink>
               <div className="relative">
                 <button onClick={() => setIsProfileMenuOpen((prev) => !prev)}>
                   <Image
-                    src={user.avatar_url || "/default-avatar.png"}
+                    src={(
+                      user.avatar_url ||
+                      "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
+                    ).trim()}
                     alt={user.name || user.username}
                     width={36}
                     height={36}
@@ -129,7 +148,6 @@ export default function Navbar() {
             <nav className="flex flex-col space-y-4 p-4">
               {user ? (
                 <>
-                  <NavLink href="/">Home</NavLink>
                   <NavLink href={`/profile/${user.username}`}>
                     My Profile
                   </NavLink>

@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
-import { useState } from "react"; // FC is a type for Function Components
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { loginUser } from "@/utils/authApi"; // Or your correct path
+import { loginUser } from "@/utils/authApi";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginFormSchema } from "@/validations/login.form"; // Or your correct path
+import { loginFormSchema } from "@/validations/login.form";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { LoginForm } from "@/types/auth.types"; // Or your correct path
+import { LoginForm } from "@/types/auth.types";
 
 export default function LoginPage() {
   const {

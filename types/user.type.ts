@@ -12,6 +12,7 @@ export interface PublicUser {
   created_at: Date;
   updated_at: Date;
   is_following?: boolean;
+  is_private?: boolean;
 }
 
 export interface UserProfile extends PublicUser {

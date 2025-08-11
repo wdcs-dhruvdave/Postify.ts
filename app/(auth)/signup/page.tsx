@@ -6,10 +6,10 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { registerUser } from "@/utils/authApi"; // Or your correct path
-import { SignupForm } from "@/types/auth.types"; // Or your correct path
+import { registerUser } from "@/utils/authApi";
+import { SignupForm } from "@/types/auth.types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signupFormSchema } from "@/validations/signup.form"; // Or your correct path
+import { signupFormSchema } from "@/validations/signup.form";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {

@@ -2,15 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, FileText, User, LogOut } from "lucide-react";
+import { Home, Settings, Search } from "lucide-react";
 
-export default function Sidebar() {
+const Sidebar = () => {
   const pathname = usePathname();
+
+  const isAuthenticated =
+    typeof window !== "undefined" && !!localStorage.getItem("token");
 
   const navItems = [
     { name: "Home", href: "/feedpage", icon: <Home size={20} /> },
-    { name: "Posts", href: "/posts", icon: <FileText size={20} /> },
-    { name: "Profile", href: "/profile", icon: <User size={20} /> },
+    ...(isAuthenticated
+      ? [
+          { name: "Explore", href: "/Explore", icon: <Search size={20} /> },
+          { name: "Settings", href: "/settings", icon: <Settings size={20} /> },
+        ]
+      : []),
   ];
 
   return (
@@ -32,12 +39,9 @@ export default function Sidebar() {
             {item.name}
           </Link>
         ))}
-
-        <button className="flex items-center px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 mt-auto">
-          <LogOut size={20} className="mr-3" />
-          Logout
-        </button>
       </nav>
     </aside>
   );
-}
+};
+
+export default Sidebar;

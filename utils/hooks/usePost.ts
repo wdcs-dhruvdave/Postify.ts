@@ -11,14 +11,19 @@ import {
 } from "@/utils/postApi";
 import { isAuthenticated } from "@/utils/auth";
 
-export const usePosts = () => {
+export const usePosts = (isLoggedIn: boolean | null) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (isLoggedIn === null) {
+      return;
+    }
+
     const fetchInitialData = async () => {
+      setLoading(true);
       try {
-        const fetchedPosts = isAuthenticated()
+        const fetchedPosts = isLoggedIn
           ? await getFeed()
           : (await getPosts()).posts;
         setPosts(fetchedPosts);
@@ -29,8 +34,9 @@ export const usePosts = () => {
         setLoading(false);
       }
     };
+
     fetchInitialData();
-  }, []);
+  }, [isLoggedIn]);
 
   const addPost = (newPost: Post) => {
     setPosts((prev) => [newPost, ...prev]);

@@ -13,11 +13,12 @@ import {
 import { PublicUser } from "@/types/user.type";
 import toast from "react-hot-toast";
 
-const SuggestedUser = ({ user }: { user: PublicUser }) => {
-  const [isFollowed, setIsFollowed] = useState(false);
+export const SuggestedUser = ({ user }: { user: PublicUser }) => {
+  const [isFollowed, setIsFollowed] = useState(user.is_following || false);
 
   const handleToggleFollow = async () => {
     const apiCall = isFollowed ? unfollowUser : followUser;
+    const originalFollowState = isFollowed;
 
     setIsFollowed(!isFollowed);
 
@@ -29,7 +30,7 @@ const SuggestedUser = ({ user }: { user: PublicUser }) => {
           : `Followed @${user.username}`,
       );
     } catch (error) {
-      setIsFollowed(isFollowed);
+      setIsFollowed(originalFollowState);
       if (error instanceof Error) toast.error(error.message);
     }
   };
@@ -46,7 +47,10 @@ const SuggestedUser = ({ user }: { user: PublicUser }) => {
         className="flex items-center space-x-3 group"
       >
         <Image
-          src={user.avatar_url || "/default-avatar.png"}
+          src={
+            user.avatar_url ||
+            "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
+          }
           alt={user.name || user.username}
           width={40}
           height={40}
@@ -108,6 +112,8 @@ export const RightSidebar = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
+  const usersToShow = searchQuery.trim() ? searchResults : suggestions;
+
   return (
     <aside className="w-80 hidden lg:block space-y-4">
       <div className="relative">
@@ -135,7 +141,7 @@ export const RightSidebar = () => {
           <p className="text-sm text-gray-500">No users found.</p>
         )}
 
-        {(searchQuery.trim() ? searchResults : suggestions).map((user) => (
+        {usersToShow.map((user) => (
           <SuggestedUser key={user.id} user={user} />
         ))}
       </div>

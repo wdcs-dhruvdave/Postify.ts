@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { createPost, getCategories } from "@/utils/postApi";
+import { createPost, updatePost, getCategories } from "@/utils/postApi";
 import { PostFormData, Post } from "@/types/post.types";
 import { useState, useEffect } from "react";
 
@@ -16,22 +16,36 @@ interface Category {
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onPostCreated: (newPost: Post) => void;
+  onPostCreated: (post: Post) => void;
+  postToEdit?: Post | null;
 }
 
 export const CreatePostModal = ({
   isOpen,
   onClose,
   onPostCreated,
+  postToEdit,
 }: CreatePostModalProps) => {
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<PostFormData>();
 
   const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    if (postToEdit && isOpen) {
+      setValue("title", postToEdit.title);
+      setValue("content_text", postToEdit.content_text || "");
+      setValue("image_url", postToEdit.image_url || "");
+      setValue("category_id", postToEdit.category_id);
+    } else {
+      reset();
+    }
+  }, [postToEdit, isOpen, setValue, reset]);
 
   useEffect(() => {
     if (isOpen) {
@@ -51,14 +65,20 @@ export const CreatePostModal = ({
 
   const onSubmit = async (data: PostFormData) => {
     try {
-      const response = await createPost(data);
-      toast.success("Post created successfully!");
+      let response;
+      if (postToEdit) {
+        response = await updatePost(postToEdit.id, data);
+        toast.success("Post updated successfully!");
+      } else {
+        response = await createPost(data);
+        toast.success("Post created successfully!");
+      }
       reset();
       onPostCreated(response.post);
       onClose();
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(error.message || "Failed to submit.");
+        toast.error(error.message);
       }
     }
   };
@@ -82,7 +102,7 @@ export const CreatePostModal = ({
           >
             <div className="flex items-center justify-between pb-4 border-b">
               <h3 className="text-xl font-bold text-blue-700">
-                Create a New Post
+                {postToEdit ? "Edit Post" : "Create a New Post"}
               </h3>
               <button
                 onClick={onClose}
@@ -108,7 +128,6 @@ export const CreatePostModal = ({
                   </p>
                 )}
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Content
@@ -119,13 +138,7 @@ export const CreatePostModal = ({
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="What's on your mind?"
                 />
-                {errors.content_text && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.content_text.message}
-                  </p>
-                )}
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Image URL (Optional)
@@ -137,7 +150,6 @@ export const CreatePostModal = ({
                   placeholder="https://example.com/image.png"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Category (Optional)
@@ -154,8 +166,7 @@ export const CreatePostModal = ({
                   ))}
                 </select>
               </div>
-
-              <div className="flex justify-end items-center pt-6 border-t mt-6 space-x-3">
+              <div className="flex justify-end pt-6 border-t mt-6 space-x-3">
                 <button
                   type="button"
                   onClick={onClose}
@@ -168,7 +179,11 @@ export const CreatePostModal = ({
                   disabled={isSubmitting}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition disabled:bg-blue-400"
                 >
-                  {isSubmitting ? "Posting..." : "Post"}
+                  {isSubmitting
+                    ? "Saving..."
+                    : postToEdit
+                      ? "Save Changes"
+                      : "Post"}
                 </button>
               </div>
             </form>

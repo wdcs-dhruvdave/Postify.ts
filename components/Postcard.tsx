@@ -2,14 +2,19 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Heart, MessageCircle, ThumbsDown } from "lucide-react";
+import { Heart, MessageCircle, MoreHorizontal, ThumbsDown } from "lucide-react";
 import { Post } from "@/types/post.types";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface PostCardProps {
   post: Post;
+  currentUserId?: string;
   onLikeToggle: (postId: string) => void;
   onDislikeToggle: (postId: string) => void;
   onCommentClick: (postId: string) => void;
+  onEdit: (post: Post) => void;
+  onDelete: (postId: string) => void;
 }
 
 const cardVariants = {
@@ -19,10 +24,18 @@ const cardVariants = {
 
 export const PostCard = ({
   post,
+  currentUserId,
   onLikeToggle,
   onDislikeToggle,
   onCommentClick,
+  onEdit,
+  onDelete,
 }: PostCardProps) => {
+  const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const isAuthor = !!currentUserId && currentUserId === post.author.id;
+
   const likeColor = post.user_has_liked ? "text-red-500" : "text-gray-500";
   const dislikeColor = post.user_has_disliked
     ? "text-blue-500"
@@ -31,18 +44,61 @@ export const PostCard = ({
   return (
     <motion.div
       variants={cardVariants}
-      className="bg-white p-6 rounded-lg shadow-md border border-gray-100 mb-6"
+      className="bg-white p-6 rounded-lg shadow-md border border-gray-100 mb-6 relative"
     >
+      {isAuthor && (
+        <div className="absolute top-4 right-4">
+          <button
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            onBlur={() => setTimeout(() => setIsMenuOpen(false), 150)}
+            className="text-gray-400 hover:text-gray-600 p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <MoreHorizontal size={20} />
+          </button>
+          {isMenuOpen && (
+            <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border z-10">
+              <button
+                onClick={() => {
+                  onEdit(post);
+                  setIsMenuOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => {
+                  onDelete(post.id);
+                  setIsMenuOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       <div className="flex items-center mb-4">
         <Image
-          src={post.author.avatar_url || "/default-avatar.png"}
+          src={
+            post.author.avatar_url ||
+            "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
+          }
           alt={post.author.name || post.author.username}
           width={40}
           height={40}
           className="rounded-full mr-4"
         />
-        <div>
-          <p className="font-bold text-gray-800">{post.author.name}</p>
+        <div
+          className="flex flex-col cursor-pointer"
+          onClick={() => router.push(`/profile/${post.author.username}`)}
+        >
+          <p className="font-bold text-gray-800">
+            {post?.author?.name?.trim() ||
+              post?.author?.username ||
+              "Anonymous User"}
+          </p>
           <p className="text-sm text-gray-500">
             @{post.author.username} ·{" "}
             {new Date(post.created_at).toLocaleDateString()}
