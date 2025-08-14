@@ -3,12 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Settings, Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const isAuthenticated =
-    typeof window !== "undefined" && !!localStorage.getItem("token");
+  useEffect(() => {
+    // Runs only on the client
+    setIsAuthenticated(!!localStorage.getItem("token"));
+  }, []);
 
   const navItems = [
     { name: "Home", href: "/feedpage", icon: <Home size={20} /> },
