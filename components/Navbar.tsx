@@ -3,20 +3,41 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Bell } from "lucide-react";
 import { PublicUser } from "@/types/user.type";
+import NotificationList from "./Notification";
+import { AuthGuard } from "./AuthGurd";
 
 export default function Navbar() {
+  const isLoggedin = localStorage.getItem("token") !== null;
   const pathname = usePathname();
   const router = useRouter();
-
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [user, setUser] = useState<PublicUser | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isNotificationOpen) return;
+
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
+        setIsNotificationOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isNotificationOpen]);
 
   useEffect(() => {
     setMounted(true);
@@ -28,6 +49,7 @@ export default function Navbar() {
     }
     setIsMobileMenuOpen(false);
     setIsProfileMenuOpen(false);
+    setIsNotificationOpen(false);
   }, [pathname]);
 
   const handleLogout = () => {
@@ -58,27 +80,51 @@ export default function Navbar() {
   );
 
   if (!mounted) {
-    return (
-      <header className="bg-white/80 backdrop-blur-md border-b shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-blue-600">
-            Postify
-          </Link>
-        </div>
-      </header>
-    );
+    return null;
   }
 
   return (
     <header className="bg-white/80 backdrop-blur-md border-b shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <Link href="/" className="text-2xl font-bold text-blue-600">
+        <Link
+          href={isLoggedin ? "/feedpage" : "/"}
+          className="text-2xl font-bold text-blue-600"
+        >
           Postify
         </Link>
 
-        <nav className="hidden md:flex space-x-6 items-center text-sm font-medium">
+        <nav className="hidden md:flex space-x-4 items-center text-sm font-medium">
           {user ? (
             <>
+              <div className="relative" ref={notificationRef}>
+                <button
+                  onClick={() => setIsNotificationOpen((prev) => !prev)}
+                  className="relative p-2 rounded-full hover:bg-gray-100 transition"
+                  aria-label="Notifications"
+                >
+                  <Bell className="w-6 h-6" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 block h-4 w-4 rounded-full bg-red-600 text-white text-xs flex items-center justify-center ring-2 ring-white">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+                <AnimatePresence>
+                  {isNotificationOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 z-20"
+                    >
+                      <NotificationList
+                        currentuser={user}
+                        onUnreadCountChange={setUnreadCount}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
               <div className="relative">
                 <button onClick={() => setIsProfileMenuOpen((prev) => !prev)}>
                   <Image

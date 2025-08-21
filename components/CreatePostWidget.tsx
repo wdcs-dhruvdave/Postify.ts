@@ -71,7 +71,10 @@ export const CreatePostWidget = ({
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex space-x-4 items-start">
           <Image
-            src={avatar_url || "/default-avatar.png"}
+            src={
+              avatar_url ||
+              "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
+            }
             alt="Your Avatar"
             width={40}
             height={40}
