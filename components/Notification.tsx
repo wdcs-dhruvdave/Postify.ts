@@ -59,15 +59,16 @@ const NotificationList: React.FC<NotificationListProps> = ({
   };
 
   const renderMessage = (notification: Notification) => {
+    const senderName = notification.sender?.username || "Someone";
     switch (notification.type) {
       case "follow":
-        return `${notification.sender.username} started following you At`;
+        return `${senderName} started following you`;
       case "like":
-        return `${notification.sender.username} liked your post At`;
+        return `${senderName} liked your post`;
       case "dislike":
-        return `${notification.sender.username} disliked your post At`;
+        return `${senderName} disliked your post`;
       case "comment":
-        return `${notification.sender.username} commented on your post At`;
+        return `${senderName} commented on your post`;
       default:
         return "You have a new notification";
     }
