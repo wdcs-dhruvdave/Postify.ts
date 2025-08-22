@@ -86,8 +86,14 @@ export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
                 comments.map((comment) => (
                   <div key={comment.id} className="flex items-start space-x-3">
                     <Image
-                      src={comment.author.avatar_url || "/default-avatar.png"}
-                      alt={comment.author.name}
+                      src={
+                        comment.author.avatar_url ||
+                        "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
+                      }
+                      alt={
+                        comment.author.name ||
+                        "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
+                      }
                       width={32}
                       height={32}
                       className="rounded-full"

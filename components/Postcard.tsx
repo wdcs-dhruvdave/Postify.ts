@@ -10,8 +10,12 @@ import { useRouter } from "next/navigation";
 interface PostCardProps {
   post: Post;
   currentUserId?: string;
-  onLikeToggle: (postId: string) => void;
-  onDislikeToggle: (postId: string) => void;
+  onLikeToggle: (postId: string, isLiked: boolean, likesCount: number) => void;
+  onDislikeToggle: (
+    postId: string,
+    isDisliked: boolean,
+    dislikesCount: number,
+  ) => void;
   onCommentClick: (postId: string) => void;
   onEdit: (post: Post) => void;
   onDelete: (postId: string) => void;
@@ -35,6 +39,8 @@ export const PostCard = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isAuthor = !!currentUserId && currentUserId === post.author.id;
+
+  console.log(post.created_at);
 
   const likeColor = post.user_has_liked ? "text-red-500" : "text-gray-500";
   const dislikeColor = post.user_has_disliked
@@ -126,7 +132,9 @@ export const PostCard = ({
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          onClick={() => onLikeToggle(post.id)}
+          onClick={() =>
+            onLikeToggle(post.id, post.user_has_liked, post.likes_count)
+          }
           className={`flex items-center space-x-2 ${likeColor} hover:text-red-500 transition-colors`}
         >
           <Heart
@@ -139,7 +147,13 @@ export const PostCard = ({
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          onClick={() => onDislikeToggle(post.id)}
+          onClick={() =>
+            onDislikeToggle(
+              post.id,
+              post.user_has_disliked,
+              post.dislikes_count,
+            )
+          }
           className={`flex items-center space-x-2 ${dislikeColor} hover:text-blue-500 transition-colors`}
         >
           <ThumbsDown

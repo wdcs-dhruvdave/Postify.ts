@@ -13,12 +13,14 @@
     "@hookform/resolvers": "^5.1.1",
     "axios": "^1.11.0",
     "framer-motion": "^12.23.6",
+    "http": "^0.0.1-security",
     "lucide-react": "^0.525.0",
     "next": "15.4.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.60.0",
     "react-hot-toast": "^2.5.2",
+    "socket.io": "^4.8.1",
     "zod": "^4.0.5"
   },
   "devDependencies": {
@@ -38,13 +40,11 @@
     "typescript": "^5.8.3"
   },
   "lint-staged": {
-  "*.{js,ts,jsx,tsx}": [
-    "echo '🧹 Running ESLint...'",
-    "eslint --fix",
-    "echo '✨ Formatting with Prettier...'",
-    "prettier --write"
-  ]
-}
-
-
+    "*.{js,ts,jsx,tsx}": [
+      "echo '🧹 Running ESLint...'",
+      "eslint --fix",
+      "echo '✨ Formatting with Prettier...'",
+      "prettier --write"
+    ]
+  }
 }
