@@ -10,8 +10,12 @@ import { useRouter } from "next/navigation";
 interface PostCardProps {
   post: Post;
   currentUserId?: string;
-  onLikeToggle: (postId: string) => void;
-  onDislikeToggle: (postId: string) => void;
+  onLikeToggle: (postId: string, isLiked: boolean, likesCount: number) => void;
+  onDislikeToggle: (
+    postId: string,
+    isDisliked: boolean,
+    dislikesCount: number,
+  ) => void;
   onCommentClick: (postId: string) => void;
   onEdit: (post: Post) => void;
   onDelete: (postId: string) => void;
@@ -160,36 +164,31 @@ export const PostCard = ({
 
       <div className="flex items-center text-gray-500 space-x-6">
         <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => {
-            console.log("[PostCard] Like clicked for post ID:", post?.id);
-            onLikeToggle(post?.id || "");
-          }}
-          className={`flex items-center space-x-2 ${likeColor} hover:text-red-500 transition-colors`}
-        >
-          <Heart
-            size={20}
-            fill={post?.user_has_liked ? "currentColor" : "none"}
-          />
-          <span>{post?.likes_count ?? 0}</span>
-        </motion.button>
+  whileHover={{ scale: 1.1 }}
+  whileTap={{ scale: 0.9 }}
+  onClick={() => {
+    console.log("[PostCard] Like clicked for post ID:", post?.id);
+    onLikeToggle(post.id, post.user_has_liked, post.likes_count);
+  }}
+  className={`flex items-center space-x-2 ${likeColor} hover:text-red-500 transition-colors`}
+>
+  <Heart size={20} fill={post?.user_has_liked ? "currentColor" : "none"} />
+  <span>{post?.likes_count ?? 0}</span>
+</motion.button>
 
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => {
-            console.log("[PostCard] Dislike clicked for post ID:", post?.id);
-            onDislikeToggle(post?.id || "");
-          }}
-          className={`flex items-center space-x-2 ${dislikeColor} hover:text-blue-500 transition-colors`}
-        >
-          <ThumbsDown
-            size={20}
-            fill={post?.user_has_disliked ? "currentColor" : "none"}
-          />
-          <span>{post?.dislikes_count ?? 0}</span>
-        </motion.button>
+<motion.button
+  whileHover={{ scale: 1.1 }}
+  whileTap={{ scale: 0.9 }}
+  onClick={() => {
+    console.log("[PostCard] Dislike clicked for post ID:", post?.id);
+    onDislikeToggle(post.id, post.user_has_disliked, post.dislikes_count);
+  }}
+  className={`flex items-center space-x-2 ${dislikeColor} hover:text-blue-500 transition-colors`}
+>
+  <ThumbsDown size={20} fill={post?.user_has_disliked ? "currentColor" : "none"} />
+  <span>{post?.dislikes_count ?? 0}</span>
+</motion.button>
+
 
         <motion.button
           whileHover={{ scale: 1.1 }}

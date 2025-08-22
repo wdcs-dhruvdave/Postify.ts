@@ -59,9 +59,14 @@ export const getPosts = async () => {
   }
 };
 
-export const getFeed = async () => {
+export const getFeed = async (page = 1, limit = 10) => {
   try {
-    const response = await apiClient.get("/posts/feed");
+    const response = await apiClient.get("/posts/feed", {
+      params: {
+        page,
+        limit,
+      },
+    });
     console.log("🚀 ~ getFeed ~ response:", response);
     return response.data;
   } catch (error) {
