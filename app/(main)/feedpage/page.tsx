@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { PostCard } from "@/components/Postcard";
 import { PostCardSkeleton } from "@/components/PostCardSkeleton";
@@ -16,6 +16,8 @@ import { PublicUser } from "@/types/user.type";
 import Sidebar from "@/components/Sidebar";
 import { deletePost } from "@/utils/postApi";
 import toast from "react-hot-toast";
+import { useInView } from "react-intersection-observer";
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -25,17 +27,29 @@ const containerVariants = {
 };
 
 export default function FeedPage() {
+  const { ref, inView } = useInView({
+    threshold: 0.5,
+    triggerOnce: true,
+  });
+
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [postToEdit, setPostToEdit] = useState<Post | null>(null);
 
-  const [post, setPosts] = useState<Post[]>([]);
-  const { posts, loading, addPost, toggleLike, toggleDislike } =
-    usePosts(loggedIn);
+  const {
+    posts,
+    setPosts,
+    loading,
+    addPost,
+    toggleLike,
+    toggleDislike,
+    loadMorePosts,
+    hasNextPage,
+  } = usePosts(loggedIn);
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [viewingCommentsOfPostId, setViewingCommentsOfPostId] = useState<
     string | null
   >(null);
-
   const [currentUser, setCurrentUser] = useState<PublicUser | null>(null);
 
   useEffect(() => {
@@ -50,17 +64,26 @@ export default function FeedPage() {
     }
   }, []);
 
-  const handleDeletePost = async (postId: string) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
-    try {
-      await deletePost(postId);
-      setPosts(posts.filter((p) => p.id !== postId));
-      toast.success("Post deleted successfully.");
-    } catch (error: unknown) {
-      if (error instanceof Error) toast.error(error.message);
-      else toast.error("Failed to delete post.");
+  useEffect(() => {
+    if (inView && !loading && hasNextPage) {
+      loadMorePosts();
     }
-  };
+  }, [inView, loading, hasNextPage, loadMorePosts]);
+
+  const handleDeletePost = useCallback(
+    async (postId: string) => {
+      if (!window.confirm("Are you sure you want to delete this post?")) return;
+      try {
+        await deletePost(postId);
+        setPosts((prevPosts) => prevPosts.filter((p) => p.id !== postId));
+        toast.success("Post deleted successfully.");
+      } catch (error: unknown) {
+        if (error instanceof Error) toast.error(error.message);
+        else toast.error("Failed to delete post.");
+      }
+    },
+    [setPosts],
+  );
 
   return (
     <>
@@ -102,32 +125,46 @@ export default function FeedPage() {
                     initial="hidden"
                     animate="visible"
                   >
-                    {loading ? (
-                      [...Array(3)].map((_, i) => <PostCardSkeleton key={i} />)
-                    ) : posts.length > 0 ? (
-                      posts.map((post) => (
-                        <PostCard
-                          key={post.id}
-                          post={post}
-                          currentUserId={currentUser?.id}
-                          onEdit={setPostToEdit}
-                          onDelete={handleDeletePost}
-                          onLikeToggle={toggleLike}
-                          onDislikeToggle={toggleDislike}
-                          onCommentClick={setViewingCommentsOfPostId}
-                        />
-                      ))
-                    ) : (
-                      <div className="text-center py-16 px-4 bg-white rounded-lg shadow-md">
-                        <h3 className="text-xl font-semibold text-gray-800">
-                          Your Feed is Empty
-                        </h3>
-                        <p className="text-gray-500 mt-2">
-                          Follow some users to see their posts here!
-                        </p>
-                      </div>
-                    )}
+                    {posts.map((post) => (
+                      <PostCard
+                        key={post.id}
+                        post={post}
+                        currentUserId={currentUser?.id}
+                        onEdit={setPostToEdit}
+                        onDelete={handleDeletePost}
+                        onLikeToggle={toggleLike}
+                        onDislikeToggle={toggleDislike}
+                        onCommentClick={setViewingCommentsOfPostId}
+                      />
+                    ))}
                   </motion.div>
+
+                  {hasNextPage && !loading && (
+                    <div ref={ref} className="h-10" />
+                  )}
+
+                  {loading &&
+                    posts.length > 0 &&
+                    [...Array(3)].map((_, i) => (
+                      <PostCardSkeleton key={`skeleton-${i}`} />
+                    ))}
+
+                  {!loading && !hasNextPage && posts.length > 0 && (
+                    <div className="text-center py-10 text-gray-500">
+                      You&#39;ve reached the end!
+                    </div>
+                  )}
+
+                  {!loading && posts.length === 0 && (
+                    <div className="text-center py-16 px-4 bg-white rounded-lg shadow-md">
+                      <h3 className="text-xl font-semibold text-gray-800">
+                        Your Feed is Empty
+                      </h3>
+                      <p className="text-gray-500 mt-2">
+                        Follow some users to see their posts here!
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
             </main>

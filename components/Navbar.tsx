@@ -34,7 +34,6 @@ export default function Navbar() {
         console.error("Failed to fetch notifications", err);
       }
     };
-
     if (user) loadUnread();
   }, [user]);
 

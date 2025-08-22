@@ -40,8 +40,6 @@ export const PostCard = ({
 
   const isAuthor = !!currentUserId && currentUserId === post.author.id;
 
-  console.log(post.created_at);
-
   const likeColor = post.user_has_liked ? "text-red-500" : "text-gray-500";
   const dislikeColor = post.user_has_disliked
     ? "text-blue-500"
