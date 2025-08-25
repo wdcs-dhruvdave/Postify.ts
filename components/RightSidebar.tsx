@@ -13,19 +13,31 @@ import {
 import { PublicUser } from "@/types/user.type";
 import toast from "react-hot-toast";
 
-export const SuggestedUser = ({ user }: { user: PublicUser }) => {
-  const [isFollowed, setIsFollowed] = useState(user.is_following || false);
+export const SuggestedUser = ({
+  user,
+  isFollowing,
+}: {
+  user: PublicUser;
+  isFollowing?: boolean;
+}) => {
+  const [isFollowed, setIsFollowed] = useState(
+    isFollowing || user.is_following || false,
+  );
+
+  useEffect(() => {
+    setIsFollowed(isFollowing || user.is_following || false);
+  }, [isFollowing, user.is_following]);
 
   const handleToggleFollow = async () => {
-    const apiCall = isFollowed ? unfollowUser : followUser;
     const originalFollowState = isFollowed;
+    const apiCall = originalFollowState ? unfollowUser : followUser;
 
-    setIsFollowed(!isFollowed);
+    setIsFollowed(!originalFollowState);
 
     try {
       await apiCall(user.id);
       toast.success(
-        isFollowed
+        originalFollowState
           ? `Unfollowed @${user.username}`
           : `Followed @${user.username}`,
       );

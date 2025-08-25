@@ -11,6 +11,7 @@ interface FollowListModalProps {
   title: string;
   users: PublicUser[];
   loading: boolean;
+  isFollowing?: boolean;
 }
 
 export const FollowListModal = ({
@@ -19,6 +20,7 @@ export const FollowListModal = ({
   title,
   users,
   loading,
+  isFollowing,
 }: FollowListModalProps) => {
   return (
     <AnimatePresence>

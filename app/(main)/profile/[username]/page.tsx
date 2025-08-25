@@ -221,7 +221,16 @@ export default function ProfilePage() {
     try {
       const apiCall = type === "followers" ? getFollowers : getFollowing;
       const users = await apiCall(profile.username);
-      setFollowListUsers(users);
+      if (isOwnProfile && type === "following") {
+        // When viewing your own 'following' list, everyone is being followed.
+        const correctedUsers = users.map((u: PublicUser) => ({
+          ...u,
+          is_following: true,
+        }));
+        setFollowListUsers(correctedUsers);
+      } else {
+        setFollowListUsers(users);
+      }
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);

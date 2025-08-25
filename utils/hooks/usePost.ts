@@ -1,6 +1,3 @@
-// --- FILE: src/utils/hooks/usePost.ts ---
-// This file contains the primary fix for the infinite loop.
-
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { Post } from "@/types/post.types";
@@ -10,6 +7,7 @@ import {
   unlikePost,
   dislikePost,
   undislikePost,
+  getPosts,
 } from "@/utils/postApi";
 import { isAuthenticated } from "@/utils/auth";
 
@@ -19,22 +17,42 @@ export const usePosts = (isLoggedIn: boolean | null) => {
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(true);
 
-  const fetchPosts = useCallback(async (pageNum: number) => {
-    setLoading(true);
-    try {
-      const data = await getFeed(pageNum);
-      setPosts((prev) =>
-        pageNum === 1 ? data.posts : [...prev, ...data.posts],
-      );
-      setHasNextPage(data.pagination.hasNextPage);
-      setPage(pageNum);
-    } catch (error) {
-      console.error("Failed to fetch posts:", error);
-      toast.error("Could not fetch feed.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const fetchPosts = useCallback(
+    async (pageNum: number) => {
+      if (isLoggedIn) {
+        setLoading(true);
+        try {
+          const data = await getFeed(pageNum);
+          setPosts((prev) =>
+            pageNum === 1 ? data.posts : [...prev, ...data.posts],
+          );
+          setHasNextPage(data.pagination.hasNextPage);
+          setPage(pageNum);
+        } catch (error) {
+          console.error("Failed to fetch feed:", error);
+          toast.error("Could not fetch feed.");
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(true);
+        try {
+          const data = await getPosts(pageNum);
+          setPosts((prev) =>
+            pageNum === 1 ? data.posts : [...prev, ...data.posts],
+          );
+          setHasNextPage(data.pagination.hasNextPage);
+          setPage(pageNum);
+        } catch (error) {
+          console.error("Failed to fetch posts:", error);
+          toast.error("Could not fetch posts.");
+        } finally {
+          setLoading(false);
+        }
+      }
+    },
+    [isLoggedIn],
+  );
 
   useEffect(() => {
     if (isLoggedIn !== null) {

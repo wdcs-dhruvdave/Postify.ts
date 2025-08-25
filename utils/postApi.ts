@@ -44,17 +44,15 @@ export const getCategories = async () => {
   }
 };
 
-export const getPosts = async () => {
+export const getPosts = async (page: number = 1, limit: number = 10) => {
   try {
-    const response = await apiClient.get("/posts", {
-      params: {
-        _: new Date().getTime(),
-      },
+    const response = await apiClient.get(`/posts`, {
+      params: { page, limit, _: new Date().getTime() },
     });
     return response.data;
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(error.message || "Failed to fetch post.");
+      throw new Error(error.message || "Failed to fetch categories.");
     }
   }
 };
@@ -120,30 +118,6 @@ export const undislikePost = async (postId: string) => {
   }
 };
 
-export const getComments = async (postId: string) => {
-  try {
-    const response = await apiClient.get(`/comments/${postId}`);
-    return response.data;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(error.message || "Failed to fetch comments.");
-    }
-  }
-};
-
-export const createComment = async (postId: string, content_text: string) => {
-  try {
-    const response = await apiClient.post(`/comments/${postId}`, {
-      content_text,
-    });
-    return response.data;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(error.message || "Failed to create comment.");
-    }
-  }
-};
-
 export const updatePost = async (
   postId: string,
   data: Partial<PostFormData>,
@@ -165,6 +139,17 @@ export const deletePost = async (postId: string) => {
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(error.message || "Failed to delete post.");
+    }
+  }
+};
+
+export const getPostsByUsername = async (username: string) => {
+  try {
+    const response = await apiClient.get(`/posts/user/${username}`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message || "Failed to fetch posts by username.");
     }
   }
 };
