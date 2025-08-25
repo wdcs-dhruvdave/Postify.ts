@@ -1,4 +1,4 @@
-import { PublicUser } from "./user.type"; // Or your correct path to user types
+import { PublicUser } from "./user.type"; 
 
 export interface Comment {
   id: string;
