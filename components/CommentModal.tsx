@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send } from "lucide-react";
 import toast from "react-hot-toast";
 import { Comment } from "@/types/comment.type";
-import { getComments, createComment } from "../utils/postApi";
-import Image from "next/image";
+import { getComments, createComment } from "../utils/commentApi";
+import { CommentItem } from "./CommentItem";
 
 interface CommentModalProps {
   postId: string | null;
@@ -17,6 +17,11 @@ export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
+  const [replyingTo, setReplyingTo] = useState<{
+    commentId: string;
+    username: string;
+  } | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (postId) {
@@ -27,28 +32,77 @@ export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
           setComments(fetchedComments);
         } catch (error) {
           if (error instanceof Error) {
-            toast.error(error.message || "Failed to fetch post.");
+            toast.error(error.message || "Failed to fetch comments.");
           }
         } finally {
           setLoading(false);
         }
       };
       fetchComments();
+    } else {
+      setComments([]);
+      setReplyingTo(null);
     }
   }, [postId]);
+
+  const addCommentToState = (
+    newComment: Comment,
+    commentsList: Comment[],
+  ): Comment[] => {
+    if (!newComment.parent_id) {
+      return [...commentsList, newComment];
+    }
+
+    return commentsList.map((comment) => {
+      if (comment.id === newComment.parent_id) {
+        const replies = comment.replies
+          ? [...comment.replies, newComment]
+          : [newComment];
+        return { ...comment, replies };
+      }
+      if (comment.replies) {
+        return {
+          ...comment,
+          replies: addCommentToState(newComment, comment.replies),
+        };
+      }
+      return comment;
+    });
+  };
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || !postId) return;
 
     try {
-      const createdComment = await createComment(postId, newComment);
-      setComments((prevComments) => [...prevComments, createdComment]);
+      const parentId = replyingTo ? replyingTo.commentId : null;
+      const createdComment = await createComment(postId, newComment, parentId);
+      setComments((prevComments) =>
+        addCommentToState(createdComment, prevComments),
+      );
       setNewComment("");
+      setReplyingTo(null);
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(error.message || "Failed to fetch feed.");
+        toast.error(error.message || "Failed to create comment.");
       }
+    }
+  };
+
+  const handleSetReplyingTo = (commentId: string) => {
+    const findComment = (id: string, list: Comment[]): Comment | undefined => {
+      for (const c of list) {
+        if (c.id === id) return c;
+        if (c.replies) {
+          const found = findComment(id, c.replies);
+          if (found) return found;
+        }
+      }
+    };
+    const comment = findComment(commentId, comments);
+    if (comment) {
+      setReplyingTo({ commentId, username: comment.author.username });
+      inputRef.current?.focus();
     }
   };
 
@@ -59,7 +113,10 @@ export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            setReplyingTo(null);
+          }}
           className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
         >
           <motion.div
@@ -72,7 +129,10 @@ export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-xl font-bold text-blue-700">Comments</h3>
               <button
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  setReplyingTo(null);
+                }}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <X size={24} />
@@ -84,49 +144,50 @@ export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
                 <p>Loading...</p>
               ) : (
                 comments.map((comment) => (
-                  <div key={comment.id} className="flex items-start space-x-3">
-                    <Image
-                      src={
-                        comment.author.avatar_url ||
-                        "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
-                      }
-                      alt={
-                        comment.author.name ||
-                        "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
-                      }
-                      width={32}
-                      height={32}
-                      className="rounded-full"
-                    />
-                    <div className="flex-1 bg-gray-100 p-3 rounded-lg">
-                      <p className="font-semibold text-sm text-gray-800">
-                        {comment.author.username}
-                      </p>
-                      <p className="text-gray-700">{comment.content_text}</p>
-                    </div>
-                  </div>
+                  <CommentItem
+                    key={comment.id}
+                    comment={comment}
+                    onReply={handleSetReplyingTo}
+                  />
                 ))
               )}
             </div>
 
-            <form
-              onSubmit={handleSubmitComment}
-              className="p-4 border-t flex items-center space-x-2"
-            >
-              <input
-                type="text"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Write a comment..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="submit"
-                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition"
+            <div className="p-4 border-t">
+              {replyingTo && (
+                <div className="text-sm text-gray-500 mb-2 flex justify-between">
+                  <span>
+                    Replying to <strong>@{replyingTo.username}</strong>
+                  </span>
+                  <button
+                    onClick={() => setReplyingTo(null)}
+                    className="font-semibold hover:text-red-500"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+              <form
+                onSubmit={handleSubmitComment}
+                className="flex items-center space-x-2"
               >
-                <Send size={20} />
-              </button>
-            </form>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Write a comment..."
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition disabled:bg-blue-300"
+                  disabled={!newComment.trim()}
+                >
+                  <Send size={20} />
+                </button>
+              </form>
+            </div>
           </motion.div>
         </motion.div>
       )}
