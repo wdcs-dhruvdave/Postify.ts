@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { PublicUser } from "@/types/user.type";
 import { SuggestedUser } from "./RightSidebar";
-
 interface FollowListModalProps {
   isOpen: boolean;
   onClose: () => void;

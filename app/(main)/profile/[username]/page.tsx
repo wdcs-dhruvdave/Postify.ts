@@ -222,7 +222,6 @@ export default function ProfilePage() {
       const apiCall = type === "followers" ? getFollowers : getFollowing;
       const users = await apiCall(profile.username);
       if (isOwnProfile && type === "following") {
-        // When viewing your own 'following' list, everyone is being followed.
         const correctedUsers = users.map((u: PublicUser) => ({
           ...u,
           is_following: true,
@@ -278,6 +277,7 @@ export default function ProfilePage() {
         loading={isFollowListLoading}
       />
 
+      {/* Rest of Profile UI */}
       <div className="min-h-screen bg-gray-50">
         <main className="max-w-4xl mx-auto py-8 px-4">
           <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 mb-8">

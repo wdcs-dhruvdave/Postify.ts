@@ -46,7 +46,7 @@ export default function FeedPage() {
     hasNextPage,
   } = usePosts(loggedIn);
 
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewingCommentsOfPostId, setViewingCommentsOfPostId] = useState<
     string | null
   >(null);
@@ -85,6 +85,27 @@ export default function FeedPage() {
     [setPosts],
   );
 
+  const handleOpenCreateModal = () => {
+    setPostToEdit(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (post: Post) => {
+    setPostToEdit(post);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setPostToEdit(null);
+  };
+
+  const handlePostUpdated = (updatedPost: Post) => {
+    setPosts((prev) =>
+      prev.map((p) => (p.id === updatedPost.id ? updatedPost : p)),
+    );
+  };
+
   return (
     <>
       <CommentModal
@@ -93,9 +114,10 @@ export default function FeedPage() {
       />
       {loggedIn && (
         <CreatePostModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onPostCreated={addPost}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onPostCreated={postToEdit ? handlePostUpdated : addPost}
+          postToEdit={postToEdit}
         />
       )}
       <div className="min-h-screen bg-gradient-to-br from-white to-blue-50">
@@ -112,7 +134,7 @@ export default function FeedPage() {
                 <>
                   {loggedIn ? (
                     <CreatePostWidget
-                      openFullModal={() => setIsCreateModalOpen(true)}
+                      openFullModal={handleOpenCreateModal}
                       onPostCreated={addPost}
                       avatar_url={currentUser?.avatar_url}
                     />
@@ -130,7 +152,7 @@ export default function FeedPage() {
                         key={post.id}
                         post={post}
                         currentUserId={currentUser?.id}
-                        onEdit={setPostToEdit}
+                        onEdit={handleOpenEditModal}
                         onDelete={handleDeletePost}
                         onLikeToggle={toggleLike}
                         onDislikeToggle={toggleDislike}

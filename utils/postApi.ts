@@ -1,6 +1,5 @@
 import axios from "axios";
 import { PostFormData } from "@/types/post.types";
-import toast from "react-hot-toast";
 
 const apiClient = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`,
@@ -27,9 +26,12 @@ export const createPost = async (data: PostFormData) => {
     const response = await apiClient.post("/posts", data);
     return response.data;
   } catch (error) {
-    if (error instanceof Error) {
-      toast(error.message || "Failed to getfeed.");
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data?.message || "Failed to create post.",
+      );
     }
+    throw new Error("An unexpected error occurred.");
   }
 };
 

@@ -4,18 +4,14 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { Heart, MessageCircle, MoreHorizontal, ThumbsDown } from "lucide-react";
 import { Post } from "@/types/post.types";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface PostCardProps {
   post: Post;
   currentUserId?: string;
-  onLikeToggle: (postId: string, isLiked: boolean, likesCount: number) => void;
-  onDislikeToggle: (
-    postId: string,
-    isDisliked: boolean,
-    dislikesCount: number,
-  ) => void;
+  onLikeToggle: (postId: string) => void;
+  onDislikeToggle: (postId: string) => void;
   onCommentClick: (postId: string) => void;
   onEdit: (post: Post) => void;
   onDelete: (postId: string) => void;
@@ -35,36 +31,24 @@ export const PostCard = ({
   onEdit,
   onDelete,
 }: PostCardProps) => {
-  console.log("[PostCard] Render start", { post, currentUserId });
-
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  useEffect(() => {
-    console.log("[PostCard] Mounted with post:", post);
-
-    return () => {
-      console.log("[PostCard] Unmounted for post ID:", post?.id);
-    };
-  }, [post]);
-
   const author = post?.author || {
     id: "",
-    name: "Anonymous User",
+    name: "Anonymous",
     username: "anonymous",
     avatar_url:
       "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg",
   };
 
-  console.log("[PostCard] Author data:", author);
-
   const isAuthor = !!currentUserId && currentUserId === author.id;
-  console.log("[PostCard] isAuthor:", isAuthor);
-
   const likeColor = post?.user_has_liked ? "text-red-500" : "text-gray-500";
   const dislikeColor = post?.user_has_disliked
     ? "text-blue-500"
     : "text-gray-500";
+
+  const isVideo = post?.image_url?.startsWith("data:video");
 
   return (
     <motion.div
@@ -72,16 +56,10 @@ export const PostCard = ({
       className="bg-white p-6 rounded-lg shadow-md border border-gray-100 mb-6 relative"
     >
       {isAuthor && (
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-4 right-4 z-10">
           <button
-            onClick={() => {
-              console.log("[PostCard] Menu toggle clicked");
-              setIsMenuOpen((prev) => !prev);
-            }}
-            onBlur={() => {
-              console.log("[PostCard] Menu lost focus");
-              setTimeout(() => setIsMenuOpen(false), 150);
-            }}
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            onBlur={() => setTimeout(() => setIsMenuOpen(false), 150)}
             className="text-gray-400 hover:text-gray-600 p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <MoreHorizontal size={20} />
@@ -90,7 +68,6 @@ export const PostCard = ({
             <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border z-10">
               <button
                 onClick={() => {
-                  console.log("[PostCard] Edit clicked for post ID:", post?.id);
                   onEdit(post);
                   setIsMenuOpen(false);
                 }}
@@ -100,10 +77,6 @@ export const PostCard = ({
               </button>
               <button
                 onClick={() => {
-                  console.log(
-                    "[PostCard] Delete clicked for post ID:",
-                    post?.id,
-                  );
                   onDelete(post?.id || "");
                   setIsMenuOpen(false);
                 }}
@@ -129,13 +102,10 @@ export const PostCard = ({
         />
         <div
           className="flex flex-col cursor-pointer"
-          onClick={() => {
-            console.log("[PostCard] Author clicked:", author.username);
-            router.push(`/profile/${author.username}`);
-          }}
+          onClick={() => router.push(`/profile/${author.username}`)}
         >
           <p className="font-bold text-gray-800">
-            {author?.name?.trim() || author?.username || "Anonymous User"}
+            {author.name || author.username}
           </p>
           <p className="text-sm text-gray-500">
             @{author.username} ·{" "}
@@ -152,51 +122,55 @@ export const PostCard = ({
       </p>
 
       {post?.image_url && (
-        <div className="relative w-full h-80 rounded-lg overflow-hidden mb-4">
-          <Image
-            src={post.image_url}
-            alt="Post image"
-            layout="fill"
-            objectFit="cover"
-          />
+        <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-4 bg-gray-100">
+          {isVideo ? (
+            <video
+              src={post.image_url}
+              controls
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <Image
+              src={post.image_url}
+              alt="Post media"
+              layout="fill"
+              objectFit="cover"
+            />
+          )}
         </div>
       )}
 
       <div className="flex items-center text-gray-500 space-x-6">
         <motion.button
-  whileHover={{ scale: 1.1 }}
-  whileTap={{ scale: 0.9 }}
-  onClick={() => {
-    console.log("[PostCard] Like clicked for post ID:", post?.id);
-    onLikeToggle(post.id, post.user_has_liked, post.likes_count);
-  }}
-  className={`flex items-center space-x-2 ${likeColor} hover:text-red-500 transition-colors`}
->
-  <Heart size={20} fill={post?.user_has_liked ? "currentColor" : "none"} />
-  <span>{post?.likes_count ?? 0}</span>
-</motion.button>
-
-<motion.button
-  whileHover={{ scale: 1.1 }}
-  whileTap={{ scale: 0.9 }}
-  onClick={() => {
-    console.log("[PostCard] Dislike clicked for post ID:", post?.id);
-    onDislikeToggle(post.id, post.user_has_disliked, post.dislikes_count);
-  }}
-  className={`flex items-center space-x-2 ${dislikeColor} hover:text-blue-500 transition-colors`}
->
-  <ThumbsDown size={20} fill={post?.user_has_disliked ? "currentColor" : "none"} />
-  <span>{post?.dislikes_count ?? 0}</span>
-</motion.button>
-
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onLikeToggle(post.id)}
+          className={`flex items-center space-x-2 ${likeColor} hover:text-red-500 transition-colors`}
+        >
+          <Heart
+            size={20}
+            fill={post?.user_has_liked ? "currentColor" : "none"}
+          />
+          <span>{post?.likes_count ?? 0}</span>
+        </motion.button>
 
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          onClick={() => {
-            console.log("[PostCard] Comment clicked for post ID:", post?.id);
-            onCommentClick(post?.id || "");
-          }}
+          onClick={() => onDislikeToggle(post.id)}
+          className={`flex items-center space-x-2 ${dislikeColor} hover:text-blue-500 transition-colors`}
+        >
+          <ThumbsDown
+            size={20}
+            fill={post?.user_has_disliked ? "currentColor" : "none"}
+          />
+          <span>{post?.dislikes_count ?? 0}</span>
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onCommentClick(post?.id || "")}
           className="flex items-center space-x-2 hover:text-blue-500 transition-colors"
         >
           <MessageCircle size={20} />
