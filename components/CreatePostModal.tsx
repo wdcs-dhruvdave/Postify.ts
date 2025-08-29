@@ -232,7 +232,6 @@ export const CreatePostModal = ({
                               }}
                             />
                           </label>
-                          <p className="pl-1">or drag and drop</p>
                         </div>
                         <p className="text-xs text-gray-500">
                           Image or Video up to 50MB

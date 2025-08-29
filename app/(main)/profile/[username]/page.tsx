@@ -26,7 +26,7 @@ import {
 import { CreatePostModal } from "@/components/CreatePostModal";
 import { EditProfileModal } from "@/components/EditProfileModal";
 import { CommentModal } from "@/components/CommentModal";
-import { FollowListModal } from "@/components/FollowListModal";
+import { UserListModal } from "@/components/UserListModal";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -63,7 +63,7 @@ export default function ProfilePage() {
     try {
       const postsData = await getUserPosts(username);
       setPosts(postsData);
-    } catch (error) {
+    } catch {
       toast.error("Could not refresh user's posts.");
     }
   };
@@ -269,7 +269,7 @@ export default function ProfilePage() {
         postId={viewingCommentsOfPostId}
         onClose={() => setViewingCommentsOfPostId(null)}
       />
-      <FollowListModal
+      <UserListModal
         isOpen={isFollowModalOpen}
         onClose={() => setIsFollowModalOpen(false)}
         title={followListType}
@@ -277,7 +277,6 @@ export default function ProfilePage() {
         loading={isFollowListLoading}
       />
 
-      {/* Rest of Profile UI */}
       <div className="min-h-screen bg-gray-50">
         <main className="max-w-4xl mx-auto py-8 px-4">
           <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 mb-8">

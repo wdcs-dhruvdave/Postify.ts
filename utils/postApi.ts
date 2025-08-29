@@ -155,3 +155,25 @@ export const getPostsByUsername = async (username: string) => {
     }
   }
 };
+
+export const getPostLikers = async (id: string): Promise<void> => {
+  try {
+    const res = await apiClient.get(`/posts/${id}/likers`);
+    const data = res.data;
+    return data;
+
+    console.log("Likers:", data);
+  } catch (error) {
+    console.error("Error fetching post likers:", error);
+  }
+};
+
+export const getPostDislikes = async (id: string) => {
+  try {
+    const res = await apiClient.get(`/posts/${id}/dislikers`);
+    const data = res.data;
+    return data;
+  } catch (error) {
+    console.error("Error fetching post dislikes:", error);
+  }
+};

@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { PublicUser } from "@/types/user.type";
 import { getRandomUsers, searchUsers } from "@/utils/userApi";
 import { AuthGuard } from "@/components/AuthGurd";
-import { SuggestedUser } from "@/components/RightSidebar";
+import { UserItem } from "@/components/UserItem";
 import { Search } from "lucide-react";
 
 const containerVariants = {
@@ -104,7 +104,7 @@ export default function ExplorePage() {
                   }}
                   className="bg-white p-4 rounded-lg shadow-md border border-gray-200"
                 >
-                  <SuggestedUser user={user} />
+                  <UserItem user={user} />
                 </motion.div>
               ))}
             </motion.div>
