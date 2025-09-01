@@ -1,17 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
+
 import { Search } from "lucide-react";
-import {
-  getFollowSuggestions,
-  searchUsers,
-  followUser,
-  unfollowUser,
-} from "@/utils/userApi";
+import { getFollowSuggestions, searchUsers } from "@/utils/userApi";
 import { PublicUser } from "@/types/user.type";
-import toast from "react-hot-toast";
 import { UserItem } from "./UserItem";
 
 export const RightSidebar = () => {

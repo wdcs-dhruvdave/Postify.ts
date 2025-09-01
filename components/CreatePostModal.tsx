@@ -115,7 +115,6 @@ export const CreatePostModal = ({
         response = await createPost(payload);
         toast.success("Post created successfully!");
       }
-
       if (response && response.post) {
         reset();
         onPostCreated(response.post);
