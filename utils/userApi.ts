@@ -71,7 +71,10 @@ export const getUserProfile = async (username: string) => {
     const response = await apiClient.get(`/users/${username}`);
     return response.data;
   } catch (err) {
-    throw handleError(err, "Failed to fetch user profile.");
+    throw handleError(
+      err,
+      `Failed to fetch profile for user "${username}". Please try again later.`,
+    );
   }
 };
 
@@ -82,10 +85,13 @@ export const getUserPosts = async (username: string) => {
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
       throw new Error(
-        err.response?.data?.message || "Failed to fetch user posts.",
+        err.response?.data?.message ||
+          `Unable to load posts for user "${username}". Please try again later.`,
       );
     }
-    throw new Error("An unexpected error occurred while fetching posts.");
+    throw new Error(
+      "An unexpected error occurred while fetching user posts. Please try again.",
+    );
   }
 };
 
@@ -94,7 +100,7 @@ export const updateUserProfile = async (data: Partial<PublicUser>) => {
     const response = await apiClient.put("/users/profile", data);
     return response.data;
   } catch (err) {
-    throw handleError(err, "Failed to update profile.");
+    throw handleError(err, "Failed to update your profile. Please try again.");
   }
 };
 
@@ -105,7 +111,10 @@ export const updateUserPrivacy = async (isPrivate: boolean) => {
     });
     return response.data;
   } catch (err) {
-    throw handleError(err, "Failed to update privacy.");
+    throw handleError(
+      err,
+      "Failed to update your privacy settings. Please try again.",
+    );
   }
 };
 
@@ -114,7 +123,10 @@ export const getFollowers = async (username: string) => {
     const response = await apiClient.get(`/users/${username}/followers`);
     return response.data;
   } catch (err) {
-    throw handleError(err, "Failed to fetch followers.");
+    throw handleError(
+      err,
+      `Failed to fetch followers for "${username}". Please try again later.`,
+    );
   }
 };
 
@@ -123,16 +135,26 @@ export const getFollowing = async (username: string) => {
     const response = await apiClient.get(`/users/${username}/following`);
     return response.data;
   } catch (err) {
-    throw handleError(err, "Failed to fetch following list.");
+    throw handleError(
+      err,
+      `Failed to fetch following list for "${username}". Please try again later.`,
+    );
   }
 };
+
 export const getRandomUsers = async () => {
   try {
     const response = await apiClient.get("/users/explore/suggestions");
     return response.data;
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw new Error(error.message || "Failed to fetch users.");
+      throw new Error(
+        error.message ||
+          "Failed to fetch suggested users. Please try again later.",
+      );
     }
+    throw new Error(
+      "An unexpected error occurred while fetching suggested users.",
+    );
   }
 };

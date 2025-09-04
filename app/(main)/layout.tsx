@@ -4,6 +4,11 @@ import Footer from "../../components/Footer";
 import "../globals.css";
 import { Toaster } from "react-hot-toast";
 
+export const metadata = {
+  title: "Postify - Your Social Media Dashboard",
+  description: "Manage and schedule your social media posts with ease.",
+};
+
 export default function RootLayout({
   children,
 }: {

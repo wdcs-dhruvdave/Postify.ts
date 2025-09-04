@@ -26,7 +26,7 @@ import {
 import { CreatePostModal } from "@/components/CreatePostModal";
 import { EditProfileModal } from "@/components/EditProfileModal";
 import { CommentModal } from "@/components/CommentModal";
-import { FollowListModal } from "@/components/FollowListModal";
+import { UserListModal } from "@/components/UserListModal";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -63,7 +63,7 @@ export default function ProfilePage() {
     try {
       const postsData = await getUserPosts(username);
       setPosts(postsData);
-    } catch (error) {
+    } catch {
       toast.error("Could not refresh user's posts.");
     }
   };
@@ -222,7 +222,6 @@ export default function ProfilePage() {
       const apiCall = type === "followers" ? getFollowers : getFollowing;
       const users = await apiCall(profile.username);
       if (isOwnProfile && type === "following") {
-        // When viewing your own 'following' list, everyone is being followed.
         const correctedUsers = users.map((u: PublicUser) => ({
           ...u,
           is_following: true,
@@ -270,7 +269,7 @@ export default function ProfilePage() {
         postId={viewingCommentsOfPostId}
         onClose={() => setViewingCommentsOfPostId(null)}
       />
-      <FollowListModal
+      <UserListModal
         isOpen={isFollowModalOpen}
         onClose={() => setIsFollowModalOpen(false)}
         title={followListType}

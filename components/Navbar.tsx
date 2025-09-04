@@ -8,15 +8,17 @@ import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Bell } from "lucide-react";
 import { PublicUser } from "@/types/user.type";
-import NotificationList from "./Notification";
-import { fetchNotifications } from "@/utils/notificationApi";
+import NotificationList from "./NotificationList";
+import { useNotifications } from "@/utils/context/NotificationsContext";
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const notificationRef = useRef<HTMLDivElement>(null);
 
-  const [unreadCount, setUnreadCount] = useState(0);
+  const notificationsContext = useNotifications();
+  const unreadCount = notificationsContext?.unreadCount ?? 0;
+
   const [user, setUser] = useState<PublicUser | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -25,44 +27,12 @@ export default function Navbar() {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   useEffect(() => {
-    const loadUnread = async () => {
-      try {
-        const data = await fetchNotifications();
-        const count = data.filter((n: { read: boolean }) => !n.read).length;
-        setUnreadCount(count);
-      } catch (err) {
-        console.error("Failed to fetch notifications", err);
-      }
-    };
-    if (user) loadUnread();
-  }, [user]);
-
-  useEffect(() => {
-    if (!isNotificationOpen) return;
-
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target as Node)
-      ) {
-        setIsNotificationOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isNotificationOpen]);
-
-  useEffect(() => {
     setMounted(true);
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
 
-    if (token && userData) {
-      setUser(JSON.parse(userData));
-    } else {
-      setUser(null);
-    }
+    if (token && userData) setUser(JSON.parse(userData));
+    else setUser(null);
 
     setIsMobileMenuOpen(false);
     setIsProfileMenuOpen(false);
@@ -95,6 +65,22 @@ export default function Navbar() {
       {children}
     </Link>
   );
+
+  useEffect(() => {
+    if (!isNotificationOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
+        setIsNotificationOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isNotificationOpen]);
 
   if (!mounted) return null;
 
@@ -132,10 +118,7 @@ export default function Navbar() {
                       exit={{ opacity: 0, y: -10 }}
                       className="absolute right-0 mt-2 z-20"
                     >
-                      <NotificationList
-                        currentuser={user}
-                        onUnreadCountChange={setUnreadCount}
-                      />
+                      <NotificationList />
                     </motion.div>
                   )}
                 </AnimatePresence>
