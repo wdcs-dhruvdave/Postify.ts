@@ -19,6 +19,7 @@ export default function RootLayout({
       <body className="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
         <ChatProvider>
           <NotificationsProvider>
+            <Navbar />
             <Toaster position="top-center" reverseOrder={false} />
             <main className="flex-1 flex flex-col">{children}</main>
           </NotificationsProvider>

@@ -3,8 +3,8 @@
 import { useChat } from "@/utils/context/ChatContext";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
-import { getMessages } from "@/utils/Apis/chatApi";
-import { useEffect, useState, useCallback } from "react";
+import { getMessages, markConversationAsRead } from "@/utils/Apis/chatApi";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useInView } from "react-intersection-observer";
 import { PublicUser } from "@/types/user.type";
 import { ChatHeader } from "./ChatHeader";
@@ -24,13 +24,24 @@ export const ChatWindow = ({ user }: { user: PublicUser }) => {
     delay: 100,
   });
 
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const previousScrollHeightRef = useRef<number | null>(null);
+
   const fetchMessages = useCallback(
     async (pageToFetch: number) => {
       if (!activeConversationId || loadingMessages || !hasMoreMessages) return;
 
       dispatch({ type: "SET_LOADING_MESSAGES", payload: true });
 
+      if (chatContainerRef.current) {
+        previousScrollHeightRef.current = chatContainerRef.current.scrollHeight;
+      }
+
       try {
+        if (pageToFetch === 1) {
+          await markConversationAsRead(activeConversationId);
+        }
+
         const newMessages = await getMessages(
           activeConversationId,
           pageToFetch,
@@ -79,6 +90,21 @@ export const ChatWindow = ({ user }: { user: PublicUser }) => {
     }
   }, [inView, hasMoreMessages, loadingMessages, pageNum, fetchMessages]);
 
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      if (previousScrollHeightRef.current !== null) {
+        const newScrollHeight = chatContainerRef.current.scrollHeight;
+        chatContainerRef.current.scrollTop =
+          newScrollHeight - previousScrollHeightRef.current;
+        previousScrollHeightRef.current = null;
+      } else {
+        // Scroll to bottom for new messages
+        chatContainerRef.current.scrollTop =
+          chatContainerRef.current.scrollHeight;
+      }
+    }
+  }, [activeMessages]);
+
   if (!activeConversationId) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -93,7 +119,9 @@ export const ChatWindow = ({ user }: { user: PublicUser }) => {
     <div className="flex-1 flex flex-col h-full bg-gray-50 dark:bg-gray-900">
       <ChatHeader user={user} />
 
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col-reverse">
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4">
+        {hasMoreMessages && <div ref={inViewRef} className="h-1" />}
+
         {loadingMessages && activeMessages.length === 0 ? (
           <div className="space-y-4">
             <MessageSkeleton />
@@ -105,8 +133,6 @@ export const ChatWindow = ({ user }: { user: PublicUser }) => {
         ) : (
           <MessageList messages={activeMessages} />
         )}
-
-        {hasMoreMessages && <div ref={inViewRef} className="h-1" />}
 
         {loadingMessages && activeMessages.length > 0 && (
           <div className="text-center p-4">Loading older messages...</div>
