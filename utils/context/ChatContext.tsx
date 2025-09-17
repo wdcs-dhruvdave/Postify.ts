@@ -1,6 +1,6 @@
 "use client";
 import { TOKEN_KEY } from "@/constants/auth";
-import { SOCKET_URL } from "@/constants/api";
+import { CHAT_API_BASE_URL } from "@/constants/api";
 import { socketEvents, CHAT_MAGIC_NUMBERS } from "@/constants/chat";
 import { errorMessages } from "@/constants/ui";
 import React, {
@@ -198,9 +198,8 @@ const ChatContext = createContext<{
   }) => void;
 } | null>(null);
 
-const socketref: { current: Socket | null } = { current: null };
-
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
+  const socketref = useRef<Socket | null>(null);
   const [state, dispatch] = useReducer(chatReducer, {
     conversations: [],
     messages: {},
@@ -218,7 +217,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
     if (token && !socketref.current) {
       console.log("[Socket] Token found, attempting to connect...");
-      socketref.current = io(SOCKET_URL || "", {
+      socketref.current = io(CHAT_API_BASE_URL || "", {
         auth: { token },
         reconnection: true,
         reconnectionAttempts: CHAT_MAGIC_NUMBERS.SOCKET_RECONNECTION_ATTEMPTS,
@@ -240,10 +239,22 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         setIsConnected(false);
       });
 
-      socketref.current.on(socketEvents.RECEIVE_MESSAGE, (message: Message) => {
-        console.log("📩 [Socket] Received 'receive_message' event:", message);
-        dispatch({ type: "ADD_MESSAGE", payload: message });
-      });
+      socketref.current.on(
+        socketEvents.RECEIVE_MESSAGE,
+        (message: Message & { tempId?: string }) => {
+          console.log("📩 [Socket] Received 'receive_message' event:", message);
+          // The message from the server will contain the tempId if it was sent from this client
+          if (message.tempId) {
+            dispatch({
+              type: "REPLACE_MESSAGE",
+              payload: { tempId: message.tempId, finalMessage: message },
+            });
+          } else {
+            // This handles messages received from other users
+            dispatch({ type: "ADD_MESSAGE", payload: message });
+          }
+        },
+      );
 
       socketref.current.on(
         socketEvents.UNREAD_NOTIFICATION,

@@ -28,7 +28,9 @@ apiClient.interceptors.request.use(
 
 export const fetchNotifications = async () => {
   try {
-    const response = await apiClient.get(NOTIFICATION_API.LIST);
+    const response = await apiClient.get(
+      `/notifications${NOTIFICATION_API.LIST}`,
+    );
     return response.data;
   } catch (error) {
     if (error instanceof Error) {
@@ -40,7 +42,9 @@ export const fetchNotifications = async () => {
 
 export const markNotificationsAsRead = async () => {
   try {
-    const response = await apiClient.post(NOTIFICATION_API.MARK_READ);
+    const response = await apiClient.post(
+      `/notifications${NOTIFICATION_API.MARK_READ}`,
+    );
     console.log("Notifications marked as read successfully:", response.data);
     return response.data;
   } catch (error) {

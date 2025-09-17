@@ -1,12 +1,12 @@
 import axios from "axios";
 import { Conversation, Message } from "@/types/chat.types";
-import { SOCKET_URL, HEADERS, CHAT_API } from "@/constants/api";
+import { CHAT_API_BASE_URL, HEADERS, CHAT_API } from "@/constants/api";
 import { TOKEN_KEY, AUTH_HEADER } from "@/constants/auth";
 import { CHAT_MAGIC_NUMBERS } from "@/constants/chat";
 import { errorMessages } from "@/constants/ui";
 
 const chatApiClient = axios.create({
-  baseURL: SOCKET_URL,
+  baseURL: CHAT_API_BASE_URL,
   headers: HEADERS,
 });
 
@@ -42,7 +42,7 @@ export const createConversation = async (
   receiverId: string,
 ): Promise<{ conversationId: string } | undefined> => {
   try {
-    const response = await chatApiClient.post(CHAT_API.CREATE_CONVERSATION, {
+    const response = await chatApiClient.post(CHAT_API.CONVERSATIONS, {
       receiverId,
     });
     return response.data;
@@ -93,5 +93,29 @@ export const markConversationAsRead = async (
     throw new Error(
       `${errorMessages.generic} while marking conversation as read.`,
     );
+  }
+};
+
+export const sendMessage = async (conversationId: string, content: string) => {
+  try {
+    const response = await fetch(
+      `/api/conversations/${conversationId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to send message");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("[sendMessage] Error:", error);
+    throw error;
   }
 };

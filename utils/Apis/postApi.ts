@@ -93,9 +93,9 @@ export const getFeed = async (page = 1, limit = 10) => {
   }
 };
 
-export const likePost = async (postId: string) => {
+export const likePost = async (id: string) => {
   try {
-    const response = await apiClient.post(POST_API.LIKE(postId));
+    const response = await apiClient.post(POST_API.LIKE(id));
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -110,9 +110,9 @@ export const likePost = async (postId: string) => {
   }
 };
 
-export const unlikePost = async (postId: string) => {
+export const unlikePost = async (id: string) => {
   try {
-    const response = await apiClient.delete(POST_API.UNLIKE(postId));
+    const response = await apiClient.delete(POST_API.UNLIKE(id));
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -127,9 +127,9 @@ export const unlikePost = async (postId: string) => {
   }
 };
 
-export const dislikePost = async (postId: string) => {
+export const dislikePost = async (id: string) => {
   try {
-    const response = await apiClient.post(POST_API.DISLIKE(postId));
+    const response = await apiClient.post(POST_API.DISLIKE(id));
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -144,9 +144,9 @@ export const dislikePost = async (postId: string) => {
   }
 };
 
-export const undislikePost = async (postId: string) => {
+export const undislikePost = async (id: string) => {
   try {
-    const response = await apiClient.delete(POST_API.UNDISLIKE(postId));
+    const response = await apiClient.delete(POST_API.UNDISLIKE(id));
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -161,12 +161,9 @@ export const undislikePost = async (postId: string) => {
   }
 };
 
-export const updatePost = async (
-  postId: string,
-  data: Partial<PostFormData>,
-) => {
+export const updatePost = async (id: string, data: Partial<PostFormData>) => {
   try {
-    const response = await apiClient.put(POST_API.UPDATE_POST(postId), data);
+    const response = await apiClient.put(POST_API.UPDATE_POST(id), data);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -181,28 +178,9 @@ export const updatePost = async (
   }
 };
 
-export const getPostsByUsername = async (username: string) => {
+export const deletePost = async (id: string) => {
   try {
-    const response = await apiClient.get(
-      POST_API.GET_POSTS_BY_USERNAME(username),
-    );
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw new Error(
-        error.response?.data?.message ||
-          `Failed to fetch posts for user "${username}". Please try again later.`,
-      );
-    }
-    throw new Error(
-      "An unexpected error occurred while fetching posts by username. Please try again.",
-    );
-  }
-};
-
-export const deletePost = async (postId: string) => {
-  try {
-    const response = await apiClient.delete(POST_API.DELETE_POST(postId));
+    const response = await apiClient.delete(POST_API.DELETE_POST(id));
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
