@@ -14,7 +14,7 @@ export const socketEvents = {
   JOIN_CONVERSATION: "join_conversation",
   SEND_MESSAGE: "send_message",
   NOTIFICATION: "notification",
-  JOIN_USER: "join_user", // Added from analysis
+  JOIN_USER: "join_user",
 };
 
 export const CHAT_UI_STRINGS = {
