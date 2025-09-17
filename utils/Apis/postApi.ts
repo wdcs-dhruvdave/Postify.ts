@@ -1,18 +1,18 @@
 import axios from "axios";
 import { PostFormData } from "@/types/post.types";
+import { BASE_URL, HEADERS, POST_API } from "@/constants/api";
+import { TOKEN_KEY, AUTH_HEADER } from "@/constants/auth";
 
 const apiClient = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: BASE_URL,
+  headers: HEADERS,
 });
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = AUTH_HEADER(token);
     }
     return config;
   },
@@ -23,7 +23,7 @@ apiClient.interceptors.request.use(
 
 export const createPost = async (data: PostFormData) => {
   try {
-    const response = await apiClient.post("/posts", data);
+    const response = await apiClient.post(POST_API.CREATE_POST, data);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -40,7 +40,7 @@ export const createPost = async (data: PostFormData) => {
 
 export const getCategories = async () => {
   try {
-    const response = await apiClient.get("/posts/categories");
+    const response = await apiClient.get(POST_API.CATEGORIES);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -57,7 +57,7 @@ export const getCategories = async () => {
 
 export const getPosts = async (page: number = 1, limit: number = 10) => {
   try {
-    const response = await apiClient.get(`/posts`, {
+    const response = await apiClient.get(POST_API.GET_POSTS, {
       params: { page, limit, _: new Date().getTime() },
     });
     return response.data;
@@ -76,7 +76,7 @@ export const getPosts = async (page: number = 1, limit: number = 10) => {
 
 export const getFeed = async (page = 1, limit = 10) => {
   try {
-    const response = await apiClient.get("/posts/feed", {
+    const response = await apiClient.get(POST_API.FEED, {
       params: { page, limit },
     });
     return response.data;
@@ -93,9 +93,9 @@ export const getFeed = async (page = 1, limit = 10) => {
   }
 };
 
-export const likePost = async (postId: string) => {
+export const likePost = async (id: string) => {
   try {
-    const response = await apiClient.post(`/posts/${postId}/like`);
+    const response = await apiClient.post(POST_API.LIKE(id));
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -110,9 +110,9 @@ export const likePost = async (postId: string) => {
   }
 };
 
-export const unlikePost = async (postId: string) => {
+export const unlikePost = async (id: string) => {
   try {
-    const response = await apiClient.delete(`/posts/${postId}/like`);
+    const response = await apiClient.delete(POST_API.UNLIKE(id));
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -127,9 +127,9 @@ export const unlikePost = async (postId: string) => {
   }
 };
 
-export const dislikePost = async (postId: string) => {
+export const dislikePost = async (id: string) => {
   try {
-    const response = await apiClient.post(`/posts/${postId}/dislike`);
+    const response = await apiClient.post(POST_API.DISLIKE(id));
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -144,9 +144,9 @@ export const dislikePost = async (postId: string) => {
   }
 };
 
-export const undislikePost = async (postId: string) => {
+export const undislikePost = async (id: string) => {
   try {
-    const response = await apiClient.delete(`/posts/${postId}/dislike`);
+    const response = await apiClient.delete(POST_API.UNDISLIKE(id));
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -161,12 +161,9 @@ export const undislikePost = async (postId: string) => {
   }
 };
 
-export const updatePost = async (
-  postId: string,
-  data: Partial<PostFormData>,
-) => {
+export const updatePost = async (id: string, data: Partial<PostFormData>) => {
   try {
-    const response = await apiClient.put(`/posts/${postId}`, data);
+    const response = await apiClient.put(POST_API.UPDATE_POST(id), data);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -181,9 +178,9 @@ export const updatePost = async (
   }
 };
 
-export const deletePost = async (postId: string) => {
+export const deletePost = async (id: string) => {
   try {
-    const response = await apiClient.delete(`/posts/${postId}`);
+    const response = await apiClient.delete(POST_API.DELETE_POST(id));
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -198,26 +195,9 @@ export const deletePost = async (postId: string) => {
   }
 };
 
-export const getPostsByUsername = async (username: string) => {
-  try {
-    const response = await apiClient.get(`/posts/user/${username}`);
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw new Error(
-        error.response?.data?.message ||
-          `Failed to fetch posts for user "${username}". Please try again later.`,
-      );
-    }
-    throw new Error(
-      "An unexpected error occurred while fetching posts by username. Please try again.",
-    );
-  }
-};
-
 export const getPostLikers = async (id: string) => {
   try {
-    const res = await apiClient.get(`/posts/${id}/likers`);
+    const res = await apiClient.get(POST_API.GET_LIKERS(id));
     return res.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -234,7 +214,7 @@ export const getPostLikers = async (id: string) => {
 
 export const getPostDislikes = async (id: string) => {
   try {
-    const res = await apiClient.get(`/posts/${id}/dislikers`);
+    const res = await apiClient.get(POST_API.GET_DISLIKERS(id));
     return res.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {

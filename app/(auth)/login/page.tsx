@@ -1,5 +1,6 @@
 "use client";
-
+import { TOKEN_KEY } from "@/constants/auth";
+import { errorMessages } from "@/constants/ui";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
@@ -27,7 +28,7 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     try {
       const response = await loginUser(data);
-      localStorage.setItem("token", response.token);
+      localStorage.setItem(TOKEN_KEY, response.token);
       localStorage.setItem("user", JSON.stringify(response.user));
       toast.success("Login successful!");
       router.push("/feedpage");
@@ -35,7 +36,7 @@ export default function LoginPage() {
       if (err instanceof Error) {
         toast.error(err.message);
       } else {
-        toast.error("An unexpected error occurred.");
+        toast.error(errorMessages.generic);
       }
     }
   };

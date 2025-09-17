@@ -1,4 +1,8 @@
 "use client";
+import { TOKEN_KEY } from "@/constants/auth";
+import { CHAT_API_BASE_URL } from "@/constants/api";
+import { socketEvents, CHAT_MAGIC_NUMBERS } from "@/constants/chat";
+import { errorMessages } from "@/constants/ui";
 import React, {
   createContext,
   useContext,
@@ -44,6 +48,11 @@ type ChatAction =
   | { type: "CLEAR_MESSAGES"; payload: string };
 
 const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
+  console.log(`[ChatReducer] Action Dispatched: ${action.type}`, {
+    payload: action.payload,
+    currentState: state,
+  });
+
   switch (action.type) {
     case "SET_LOADING_CONVERSATIONS":
       return { ...state, loadingConversations: action.payload };
@@ -65,7 +74,7 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
           ...state.messages,
           [action.payload.conversationId]: [...action.payload.messages].sort(
             (a, b) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
           ),
         },
         loadingMessages: false,
@@ -75,17 +84,14 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
       const msg = action.payload;
       const existing = state.messages[msg.conversationId] || [];
 
-      if (
-        existing.some(
-          (m) => m.id === msg.id || (msg.tempId && m.id === msg.tempId),
-        )
-      )
+      if (existing.some((m) => m.id === msg.id)) {
+        console.log(
+          `[ChatReducer] ADD_MESSAGE skipped: Duplicate message ID ${msg.id}`,
+        );
         return state;
+      }
 
-      const updatedMessages = [...existing, msg].sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
+      const updatedMessages = [...existing, msg];
 
       return {
         ...state,
@@ -144,28 +150,21 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
     case "PREPEND_MESSAGES": {
       const { conversationId, messages } = action.payload;
       const current = state.messages[conversationId] || [];
-
       const ids = new Set(current.map((m) => m.id));
       const unique = messages.filter((m) => !ids.has(m.id));
-
       const updated = [...unique, ...current].sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
-
       return {
         ...state,
-        messages: {
-          ...state.messages,
-          [conversationId]: updated,
-        },
+        messages: { ...state.messages, [conversationId]: updated },
       };
     }
 
     case "REPLACE_MESSAGE": {
       const { tempId, finalMessage } = action.payload;
       const cid = finalMessage.conversationId;
-
       return {
         ...state,
         messages: {
@@ -180,10 +179,7 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
     case "CLEAR_MESSAGES":
       return {
         ...state,
-        messages: {
-          ...state.messages,
-          [action.payload]: [],
-        },
+        messages: { ...state.messages, [action.payload]: [] },
       };
 
     default:
@@ -202,9 +198,8 @@ const ChatContext = createContext<{
   }) => void;
 } | null>(null);
 
-const socketref: { current: Socket | null } = { current: null };
-
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
+  const socketref = useRef<Socket | null>(null);
   const [state, dispatch] = useReducer(chatReducer, {
     conversations: [],
     messages: {},
@@ -217,37 +212,57 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const previousConversationIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (isConnected && socketref.current) {
-      const userId = localStorage.getItem("userId");
-      if (userId) {
-        socketref.current.emit("join_user", userId);
-        console.log(`🚪 Joined user room: ${userId}`);
-      }
-    }
-  }, [isConnected]);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
+    console.log("[ChatProvider] Initializing socket effect...");
+    const token = localStorage.getItem(TOKEN_KEY);
 
     if (token && !socketref.current) {
-      socketref.current = io(process.env.NEXT_PUBLIC_CHAT_SOCKET_URL || "", {
+      console.log("[Socket] Token found, attempting to connect...");
+      socketref.current = io(CHAT_API_BASE_URL || "", {
         auth: { token },
         reconnection: true,
-        reconnectionAttempts: 5,
+        reconnectionAttempts: CHAT_MAGIC_NUMBERS.SOCKET_RECONNECTION_ATTEMPTS,
       });
 
-      socketref.current.on("connect", () => setIsConnected(true));
-      socketref.current.on("disconnect", () => setIsConnected(false));
-      socketref.current.on("connect_error", () => setIsConnected(false));
-
-      socketref.current.on("receive_message", (message: Message) => {
-        dispatch({ type: "ADD_MESSAGE", payload: message });
-        console.log("📩 Received:", message);
+      socketref.current.on(socketEvents.CONNECT, () => {
+        console.log(
+          "✅ [Socket] Connected successfully with ID:",
+          socketref.current?.id,
+        );
+        setIsConnected(true);
+      });
+      socketref.current.on(socketEvents.DISCONNECT, (reason) => {
+        console.log("🔌 [Socket] Disconnected:", reason);
+        setIsConnected(false);
+      });
+      socketref.current.on(socketEvents.CONNECT_ERROR, (err) => {
+        console.error("❌ [Socket] Connection Error:", err.message);
+        setIsConnected(false);
       });
 
       socketref.current.on(
-        "unread_notification",
+        socketEvents.RECEIVE_MESSAGE,
+        (message: Message & { tempId?: string }) => {
+          console.log("📩 [Socket] Received 'receive_message' event:", message);
+          // The message from the server will contain the tempId if it was sent from this client
+          if (message.tempId) {
+            dispatch({
+              type: "REPLACE_MESSAGE",
+              payload: { tempId: message.tempId, finalMessage: message },
+            });
+          } else {
+            // This handles messages received from other users
+            dispatch({ type: "ADD_MESSAGE", payload: message });
+          }
+        },
+      );
+
+      socketref.current.on(
+        socketEvents.UNREAD_NOTIFICATION,
         (notif: UnReadnotification) => {
+          console.log(
+            "🔔 [Socket] Received 'unread_message_notification' event:",
+            notif,
+          );
           dispatch({
             type: "UPDATE_CONVERSATION_NOTIFICATION",
             payload: notif,
@@ -258,6 +273,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       if (socketref.current) {
+        console.log("[Socket] Cleaning up and disconnecting socket...");
         socketref.current.disconnect();
         socketref.current = null;
       }
@@ -266,20 +282,43 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (isConnected && socketref.current) {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (user.id) {
+        socketref.current.emit(socketEvents.JOIN_USER, user.id);
+        console.log(`🚪 [Socket] Emitted 'join_user' for room: ${user.id}`);
+      }
+    }
+  }, [isConnected]);
+
+  useEffect(() => {
+    if (isConnected && socketref.current) {
       const previousConversationId = previousConversationIdRef.current;
+      const activeConversationId = state.activeConversationId;
 
       if (
         previousConversationId &&
-        previousConversationId !== state.activeConversationId
+        previousConversationId !== activeConversationId
       ) {
-        socketref.current.emit("leave_conversation", previousConversationId);
+        socketref.current.emit(
+          socketEvents.LEAVE_CONVERSATION,
+          previousConversationId,
+        );
+        console.log(
+          `🚪 [Socket] Emitted 'leave_conversation' for room: ${previousConversationId}`,
+        );
       }
 
-      if (state.activeConversationId) {
-        socketref.current.emit("join_conversation", state.activeConversationId);
+      if (activeConversationId) {
+        socketref.current.emit(
+          socketEvents.JOIN_CONVERSATION,
+          activeConversationId,
+        );
+        console.log(
+          `🚪 [Socket] Emitted 'join_conversation' for room: ${activeConversationId}`,
+        );
       }
 
-      previousConversationIdRef.current = state.activeConversationId;
+      previousConversationIdRef.current = activeConversationId;
     }
   }, [isConnected, state.activeConversationId]);
 
@@ -291,9 +330,13 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       tempId: string;
     }) => {
       if (socketref.current && isConnected) {
-        socketref.current.emit("send_message", payload);
+        console.log(
+          "📤 [Socket] Emitting 'send_message' with payload:",
+          payload,
+        );
+        socketref.current.emit(socketEvents.SEND_MESSAGE, payload);
       } else {
-        console.error("Socket not connected, cannot send message.");
+        console.error(errorMessages.CHAT_NOT_CONNECTED_SEND_MESSAGE);
       }
     },
     [isConnected],

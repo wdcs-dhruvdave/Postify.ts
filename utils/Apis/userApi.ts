@@ -1,18 +1,19 @@
 import { PublicUser } from "@/types/user.type";
 import axios from "axios";
+import { BASE_URL, HEADERS, USER_API } from "@/constants/api";
+import { TOKEN_KEY, AUTH_HEADER } from "@/constants/auth";
+import { errorMessages } from "@/constants/ui";
 
 const apiClient = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: BASE_URL,
+  headers: HEADERS,
 });
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = AUTH_HEADER(token);
     }
     return config;
   },
@@ -25,12 +26,12 @@ const handleError = (err: unknown, defaultMessage: string): Error => {
   if (axios.isAxiosError(err)) {
     return new Error(err.response?.data?.message || defaultMessage);
   }
-  return new Error("An unexpected error occurred.");
+  return new Error(errorMessages.generic);
 };
 
 export const searchUsers = async (query: string) => {
   try {
-    const response = await apiClient.get("/users/search", {
+    const response = await apiClient.get(USER_API.SEARCH, {
       params: { q: query },
     });
     return response.data;
@@ -41,7 +42,7 @@ export const searchUsers = async (query: string) => {
 
 export const getFollowSuggestions = async () => {
   try {
-    const response = await apiClient.get("/users/suggestions");
+    const response = await apiClient.get(USER_API.SUGGESTIONS);
     return response.data;
   } catch (err) {
     throw handleError(err, "Failed to get suggestions.");
@@ -50,7 +51,7 @@ export const getFollowSuggestions = async () => {
 
 export const followUser = async (userId: string) => {
   try {
-    const response = await apiClient.post(`/users/${userId}/follow`);
+    const response = await apiClient.post(USER_API.FOLLOW(userId));
     return response.data;
   } catch (err) {
     throw handleError(err, "Failed to follow user.");
@@ -59,7 +60,7 @@ export const followUser = async (userId: string) => {
 
 export const unfollowUser = async (userId: string) => {
   try {
-    const response = await apiClient.delete(`/users/${userId}/follow`);
+    const response = await apiClient.delete(USER_API.UNFOLLOW(userId));
     return response.data;
   } catch (err) {
     throw handleError(err, "Failed to unfollow user.");
@@ -68,93 +69,96 @@ export const unfollowUser = async (userId: string) => {
 
 export const getUserProfile = async (username: string) => {
   try {
-    const response = await apiClient.get(`/users/${username}`);
+    const response = await apiClient.get(USER_API.GET_BY_USERNAME(username));
     return response.data;
   } catch (err) {
     throw handleError(
       err,
-      `Failed to fetch profile for user "${username}". Please try again later.`,
+      `Failed to fetch profile for user "${username}". ${errorMessages.tryAgain}`,
     );
   }
 };
 
 export const getUserPosts = async (username: string) => {
   try {
-    const response = await apiClient.get(`/users/${username}/posts`);
+    const response = await apiClient.get(
+      USER_API.GET_POSTS_BY_USERNAME(username),
+    );
     return response.data;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
       throw new Error(
         err.response?.data?.message ||
-          `Unable to load posts for user "${username}". Please try again later.`,
+          `Unable to load posts for user "${username}". ${errorMessages.tryAgain}`,
       );
     }
     throw new Error(
-      "An unexpected error occurred while fetching user posts. Please try again.",
+      `${errorMessages.generic} while fetching user posts. ${errorMessages.tryAgain}`,
     );
   }
 };
 
 export const updateUserProfile = async (data: Partial<PublicUser>) => {
   try {
-    const response = await apiClient.put("/users/profile", data);
+    const response = await apiClient.put(USER_API.PROFILE, data);
     return response.data;
   } catch (err) {
-    throw handleError(err, "Failed to update your profile. Please try again.");
+    throw handleError(
+      err,
+      `Failed to update your profile. ${errorMessages.tryAgain}`,
+    );
   }
 };
 
 export const updateUserPrivacy = async (isPrivate: boolean) => {
   try {
-    const response = await apiClient.put("/users/profile/privacy", {
+    const response = await apiClient.put(USER_API.PROFILE_PRIVACY, {
       is_private: isPrivate,
     });
     return response.data;
   } catch (err) {
     throw handleError(
       err,
-      "Failed to update your privacy settings. Please try again.",
+      `Failed to update your privacy settings. ${errorMessages.tryAgain}`,
     );
   }
 };
 
 export const getFollowers = async (username: string) => {
   try {
-    const response = await apiClient.get(`/users/${username}/followers`);
+    const response = await apiClient.get(USER_API.FOLLOWERS(username));
     return response.data;
   } catch (err) {
     throw handleError(
       err,
-      `Failed to fetch followers for "${username}". Please try again later.`,
+      `Failed to fetch followers for "${username}". ${errorMessages.tryAgain}`,
     );
   }
 };
 
 export const getFollowing = async (username: string) => {
   try {
-    const response = await apiClient.get(`/users/${username}/following`);
+    const response = await apiClient.get(USER_API.FOLLOWING(username));
     return response.data;
   } catch (err) {
     throw handleError(
       err,
-      `Failed to fetch following list for "${username}". Please try again later.`,
+      `Failed to fetch following list for "${username}". ${errorMessages.tryAgain}`,
     );
   }
 };
 
 export const getRandomUsers = async () => {
   try {
-    const response = await apiClient.get("/users/explore/suggestions");
+    const response = await apiClient.get(USER_API.EXPLORE);
     return response.data;
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(
         error.message ||
-          "Failed to fetch suggested users. Please try again later.",
+          `${errorMessages.fetchFailed} suggested users. ${errorMessages.tryAgain}`,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while fetching suggested users.",
-    );
+    throw new Error(`${errorMessages.generic} while fetching suggested users.`);
   }
 };

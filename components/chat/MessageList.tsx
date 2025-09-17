@@ -1,5 +1,5 @@
 "use client";
-
+import { CHAT_UI_STRINGS } from "@/constants/chat";
 import { Message } from "@/types/chat.types";
 import { MessageBubble } from "./MessageBubble";
 
@@ -12,7 +12,9 @@ export const MessageList = ({ messages }: MessageListProps) => {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 dark:text-gray-400">No messages yet.</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            {CHAT_UI_STRINGS.NO_MESSAGES_YET}
+          </p>
           <p className="text-gray-400 dark:text-gray-500 text-sm">
             Be the first to say something!
           </p>

@@ -1,5 +1,6 @@
 "use client";
 
+import { TOKEN_KEY } from "@/constants/auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Settings, Search, MessageCircle, User } from "lucide-react";
@@ -17,7 +18,7 @@ const Sidebar = () => {
 
   useEffect(() => {
     setMounted(true);
-    setIsAuthenticated(!!localStorage.getItem("token"));
+    setIsAuthenticated(!!localStorage.getItem(TOKEN_KEY));
   }, []);
 
   const navItems = [

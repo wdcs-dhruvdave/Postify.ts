@@ -1,3 +1,4 @@
+import { CHAT_UI_STRINGS } from "@/constants/chat";
 import { getConversations } from "@/utils/Apis/chatApi";
 import { useChat } from "@/utils/context/ChatContext";
 import { useEffect } from "react";
@@ -31,7 +32,7 @@ export const ConversationList = () => {
     <div className="h-full flex flex-col bg-white dark:bg-gray-800">
       <div className="p-4 border-b dark:border-gray-700 flex-shrink-0">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Chats
+          {CHAT_UI_STRINGS.CHAT_TITLE}
         </h2>
       </div>
 

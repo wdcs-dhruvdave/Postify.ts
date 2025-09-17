@@ -1,4 +1,6 @@
 "use client";
+import { CHAT_UI_STRINGS } from "@/constants/chat";
+import { errorMessages } from "@/constants/ui";
 import { searchUsers } from "@/utils/Apis/userApi";
 import { PublicUser } from "@/types/user.type";
 import { useState } from "react";
@@ -35,7 +37,7 @@ export const ConversationSearch = () => {
 
   const handleStartChat = async (receiver: PublicUser) => {
     try {
-      console.log("📩 Starting chat...");
+      console.log(CHAT_UI_STRINGS.STARTING_CHAT_MESSAGE);
       console.log("➡️ Receiver object:", receiver);
       console.log("➡️ Sender (authUser) object:", authUser);
 
@@ -49,9 +51,7 @@ export const ConversationSearch = () => {
       console.log("✅ API Response from createConversation:", response);
 
       if (!response || !response.conversationId) {
-        console.error(
-          "💥 Failed to create conversation or missing conversationId.",
-        );
+        console.error(errorMessages.CHAT_FAILED_TO_CREATE_CONVERSATION);
         return;
       }
 
@@ -66,7 +66,7 @@ export const ConversationSearch = () => {
       setShowDropdown(false);
       setUserSearchQuery("");
     } catch (error) {
-      console.error("💥 Error starting chat:", error);
+      console.error(errorMessages.CHAT_ERROR_STARTING_CHAT, error);
     }
   };
 
