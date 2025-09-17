@@ -1,18 +1,19 @@
 import axios from "axios";
 import { Comment } from "@/types/comment.type";
+import { BASE_URL, HEADERS, COMMENT_API } from "@/constants/api";
+import { TOKEN_KEY, AUTH_HEADER } from "@/constants/auth";
+import { errorMessages } from "@/constants/ui";
 
 const apiClient = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: BASE_URL,
+  headers: HEADERS,
 });
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = AUTH_HEADER(token);
     }
     return config;
   },
@@ -23,13 +24,15 @@ apiClient.interceptors.request.use(
 
 export const getComments = async (postId: string): Promise<Comment[]> => {
   try {
-    const response = await apiClient.get(`/posts/${postId}/comments`);
+    const response = await apiClient.get(COMMENT_API.BY_POST(postId));
     return response.data;
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(error.message || "Failed to fetch comments.");
+      throw new Error(
+        error.message || `${errorMessages.fetchFailed} comments.`,
+      );
     } else {
-      throw new Error("Failed to fetch comments.");
+      throw new Error(`${errorMessages.fetchFailed} comments.`);
     }
   }
 };
@@ -40,7 +43,7 @@ export const createComment = async (
   parentId?: string | null,
 ): Promise<Comment> => {
   try {
-    const response = await apiClient.post(`/posts/${postId}/comments`, {
+    const response = await apiClient.post(COMMENT_API.BY_POST(postId), {
       content_text,
       parent_id: parentId,
     });

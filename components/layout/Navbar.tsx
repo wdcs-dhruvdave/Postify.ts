@@ -1,5 +1,6 @@
 "use client";
 
+import { TOKEN_KEY } from "@/constants/auth";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -28,7 +29,7 @@ export default function Navbar() {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(TOKEN_KEY);
     const userData = localStorage.getItem("user");
 
     if (token && userData) {
@@ -44,7 +45,7 @@ export default function Navbar() {
   }, [pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem("user");
     setUser(null);
     toast.success("Logged out successfully");

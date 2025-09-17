@@ -1,19 +1,21 @@
 import axios from "axios";
 import { Conversation, Message } from "@/types/chat.types";
+import { SOCKET_URL, HEADERS, CHAT_API } from "@/constants/api";
+import { TOKEN_KEY, AUTH_HEADER } from "@/constants/auth";
+import { CHAT_MAGIC_NUMBERS } from "@/constants/chat";
+import { errorMessages } from "@/constants/ui";
 
 const chatApiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_CHAT_SOCKET_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: SOCKET_URL,
+  headers: HEADERS,
 });
 
 chatApiClient.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem(TOKEN_KEY);
       if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        config.headers.Authorization = AUTH_HEADER(token);
       }
     }
     return config;
@@ -23,17 +25,16 @@ chatApiClient.interceptors.request.use(
 
 export const getConversations = async (): Promise<Conversation[]> => {
   try {
-    const response = await chatApiClient.get("/chat/conversations");
+    const response = await chatApiClient.get(CHAT_API.CONVERSATIONS);
     return response.data;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
       throw new Error(
-        err.response?.data?.message || "Failed to fetch conversations.",
+        err.response?.data?.message ||
+          `${errorMessages.fetchFailed} conversations.`,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while fetching conversations.",
-    );
+    throw new Error(`${errorMessages.generic} while fetching conversations.`);
   }
 };
 
@@ -41,14 +42,15 @@ export const createConversation = async (
   receiverId: string,
 ): Promise<{ conversationId: string } | undefined> => {
   try {
-    const response = await chatApiClient.post("/chat/conversations", {
+    const response = await chatApiClient.post(CHAT_API.CREATE_CONVERSATION, {
       receiverId,
     });
     return response.data;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
       throw new Error(
-        err.response?.data?.message || "Failed to create conversation.",
+        err.response?.data?.message ||
+          errorMessages.CHAT_FAILED_TO_CREATE_CONVERSATION,
       );
     }
     return undefined;
@@ -57,12 +59,12 @@ export const createConversation = async (
 
 export const getMessages = async (
   conversationId: string,
-  pageNum: number,
-  limit: number,
+  pageNum: number = CHAT_MAGIC_NUMBERS.DEFAULT_PAGE_NUM,
+  limit: number = CHAT_MAGIC_NUMBERS.DEFAULT_MESSAGE_LIMIT,
 ): Promise<Message[]> => {
   try {
     const response = await chatApiClient.get(
-      `/chat/conversations/${conversationId}/messages?page=${pageNum}&limit=${limit}`,
+      CHAT_API.MESSAGES(conversationId) + `?page=${pageNum}&limit=${limit}`,
     );
     console.log("🚀 ~ getMessages ~ response:", response);
 
@@ -70,10 +72,10 @@ export const getMessages = async (
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
       throw new Error(
-        err.response?.data?.message || "Failed to fetch messages.",
+        err.response?.data?.message || `${errorMessages.fetchFailed} messages.`,
       );
     }
-    throw new Error("An unexpected error occurred while fetching messages.");
+    throw new Error(`${errorMessages.generic} while fetching messages.`);
   }
 };
 
@@ -81,15 +83,15 @@ export const markConversationAsRead = async (
   conversationId: string,
 ): Promise<void> => {
   try {
-    await chatApiClient.post(`/chat/conversations/${conversationId}/read`);
+    await chatApiClient.post(CHAT_API.MARK_READ(conversationId));
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
       throw new Error(
-        err.response?.data?.message || "Failed to mark conversation as read.",
+        err.response?.data?.message || errorMessages.CHAT_FAILED_TO_MARK_READ,
       );
     }
     throw new Error(
-      "An unexpected error occurred while marking conversation as read.",
+      `${errorMessages.generic} while marking conversation as read.`,
     );
   }
 };

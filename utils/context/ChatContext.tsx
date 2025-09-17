@@ -1,4 +1,8 @@
 "use client";
+import { TOKEN_KEY } from "@/constants/auth";
+import { SOCKET_URL } from "@/constants/api";
+import { socketEvents, CHAT_MAGIC_NUMBERS } from "@/constants/chat";
+import { errorMessages } from "@/constants/ui";
 import React, {
   createContext,
   useContext,
@@ -80,11 +84,7 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
       const msg = action.payload;
       const existing = state.messages[msg.conversationId] || [];
 
-      if (
-        existing.some(
-          (m) => m.id === msg.id || (msg.tempId && m.id === msg.tempId),
-        )
-      ) {
+      if (existing.some((m) => m.id === msg.id)) {
         console.log(
           `[ChatReducer] ADD_MESSAGE skipped: Duplicate message ID ${msg.id}`,
         );
@@ -214,39 +214,39 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     console.log("[ChatProvider] Initializing socket effect...");
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(TOKEN_KEY);
 
     if (token && !socketref.current) {
       console.log("[Socket] Token found, attempting to connect...");
-      socketref.current = io(process.env.NEXT_PUBLIC_CHAT_SOCKET_URL || "", {
+      socketref.current = io(SOCKET_URL || "", {
         auth: { token },
         reconnection: true,
-        reconnectionAttempts: 5,
+        reconnectionAttempts: CHAT_MAGIC_NUMBERS.SOCKET_RECONNECTION_ATTEMPTS,
       });
 
-      socketref.current.on("connect", () => {
+      socketref.current.on(socketEvents.CONNECT, () => {
         console.log(
           "✅ [Socket] Connected successfully with ID:",
           socketref.current?.id,
         );
         setIsConnected(true);
       });
-      socketref.current.on("disconnect", (reason) => {
+      socketref.current.on(socketEvents.DISCONNECT, (reason) => {
         console.log("🔌 [Socket] Disconnected:", reason);
         setIsConnected(false);
       });
-      socketref.current.on("connect_error", (err) => {
+      socketref.current.on(socketEvents.CONNECT_ERROR, (err) => {
         console.error("❌ [Socket] Connection Error:", err.message);
         setIsConnected(false);
       });
 
-      socketref.current.on("receive_message", (message: Message) => {
+      socketref.current.on(socketEvents.RECEIVE_MESSAGE, (message: Message) => {
         console.log("📩 [Socket] Received 'receive_message' event:", message);
         dispatch({ type: "ADD_MESSAGE", payload: message });
       });
 
       socketref.current.on(
-        "unread_message_notification",
+        socketEvents.UNREAD_NOTIFICATION,
         (notif: UnReadnotification) => {
           console.log(
             "🔔 [Socket] Received 'unread_message_notification' event:",
@@ -273,7 +273,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     if (isConnected && socketref.current) {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (user.id) {
-        socketref.current.emit("join_user", user.id);
+        socketref.current.emit(socketEvents.JOIN_USER, user.id);
         console.log(`🚪 [Socket] Emitted 'join_user' for room: ${user.id}`);
       }
     }
@@ -288,14 +288,20 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         previousConversationId &&
         previousConversationId !== activeConversationId
       ) {
-        socketref.current.emit("leave_conversation", previousConversationId);
+        socketref.current.emit(
+          socketEvents.LEAVE_CONVERSATION,
+          previousConversationId,
+        );
         console.log(
           `🚪 [Socket] Emitted 'leave_conversation' for room: ${previousConversationId}`,
         );
       }
 
       if (activeConversationId) {
-        socketref.current.emit("join_conversation", activeConversationId);
+        socketref.current.emit(
+          socketEvents.JOIN_CONVERSATION,
+          activeConversationId,
+        );
         console.log(
           `🚪 [Socket] Emitted 'join_conversation' for room: ${activeConversationId}`,
         );
@@ -317,9 +323,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           "📤 [Socket] Emitting 'send_message' with payload:",
           payload,
         );
-        socketref.current.emit("send_message", payload);
+        socketref.current.emit(socketEvents.SEND_MESSAGE, payload);
       } else {
-        console.error("❌ [Socket] Not connected, cannot send message.");
+        console.error(errorMessages.CHAT_NOT_CONNECTED_SEND_MESSAGE);
       }
     },
     [isConnected],
