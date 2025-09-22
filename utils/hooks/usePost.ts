@@ -8,6 +8,7 @@ import {
   dislikePost,
   undislikePost,
   getPosts,
+  getCategory,
 } from "@/utils/Apis/postApi";
 import { isAuthenticated } from "@/utils/auth";
 
@@ -19,36 +20,43 @@ export const usePosts = (isLoggedIn: boolean | null) => {
 
   const fetchPosts = useCallback(
     async (pageNum: number) => {
-      if (isLoggedIn) {
-        setLoading(true);
-        try {
-          const data = await getFeed(pageNum);
-          setPosts((prev) =>
-            pageNum === 1 ? data.posts : [...prev, ...data.posts],
-          );
-          setHasNextPage(data.pagination.hasNextPage);
-          setPage(pageNum);
-        } catch (error) {
-          console.error("Failed to fetch feed:", error);
-          toast.error("Could not fetch feed.");
-        } finally {
-          setLoading(false);
+      setLoading(true);
+
+      try {
+        let data;
+
+        if (isLoggedIn) {
+          data = await getFeed(pageNum);
+        } else {
+          data = await getPosts(pageNum);
         }
-      } else {
-        setLoading(true);
-        try {
-          const data = await getPosts(pageNum);
-          setPosts((prev) =>
-            pageNum === 1 ? data.posts : [...prev, ...data.posts],
-          );
-          setHasNextPage(data.pagination.hasNextPage);
-          setPage(pageNum);
-        } catch (error) {
-          console.error("Failed to fetch posts:", error);
-          toast.error("Could not fetch posts.");
-        } finally {
-          setLoading(false);
-        }
+
+        // fetch categories for each post
+        const categories = await Promise.all(
+          data.posts.map((post) => getCategory(post.category_id)),
+        );
+
+        // merge category into post
+        const postsWithCategories = data.posts.map((post, index) => ({
+          ...post,
+          category: categories[index], // add category object directly
+        }));
+
+        console.log("Posts with categories:", postsWithCategories);
+
+        setPosts((prev) =>
+          pageNum === 1
+            ? postsWithCategories
+            : [...prev, ...postsWithCategories],
+        );
+
+        setHasNextPage(data.pagination.hasNextPage);
+        setPage(pageNum);
+      } catch (error) {
+        console.error("Failed to fetch posts:", error);
+        toast.error("Could not fetch posts.");
+      } finally {
+        setLoading(false);
       }
     },
     [isLoggedIn],

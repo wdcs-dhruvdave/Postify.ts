@@ -22,6 +22,7 @@ export const CHAT_API = {
 export const POST_API = {
   CREATE_POST: "/posts",
   CATEGORIES: "/posts/categories",
+  CATEGORY: (id: string) => `/posts/categories/${id}`,
   GET_POSTS: "/posts",
   FEED: "/posts/feed",
   LIKE: (id: string) => `/posts/${id}/like`,
