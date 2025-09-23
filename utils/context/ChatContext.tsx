@@ -115,17 +115,39 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
     case "UPDATE_CONVERSATION_NOTIFICATION": {
       const notif = action.payload;
       const isActive = state.activeConversationId === notif.conversationId;
+      const conversationId = notif.conversationId;
+      const lastMessage = notif.lastMessage;
+
+      if (!lastMessage) {
+        return state;
+      }
+
+      const existingMessages = state.messages[conversationId] || [];
+      const messageExists = existingMessages.some(
+        (m) => m.id === lastMessage.id,
+      );
+
+      const updatedMessages = messageExists
+        ? existingMessages
+        : [...existingMessages, lastMessage].sort(
+            (a, b) =>
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+          );
 
       return {
         ...state,
+        messages: {
+          ...state.messages,
+          [conversationId]: updatedMessages,
+        },
         conversations: state.conversations
           .map((c) =>
-            c.id === notif.conversationId
+            c.id === conversationId
               ? {
                   ...c,
-                  lastMessage: notif.lastMessage,
+                  lastMessage: lastMessage,
                   unreadCount: isActive ? 0 : (c.unreadCount || 0) + 1,
-                  updatedAt: notif.lastMessage?.createdAt || c.updatedAt,
+                  updatedAt: lastMessage.createdAt,
                 }
               : c,
           )
@@ -165,15 +187,30 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
     case "REPLACE_MESSAGE": {
       const { tempId, finalMessage } = action.payload;
       const cid = finalMessage.conversationId;
-      return {
-        ...state,
-        messages: {
-          ...state.messages,
-          [cid]: (state.messages[cid] || []).map((m) =>
-            m.tempId === tempId || m.id === tempId ? finalMessage : m,
-          ),
-        },
-      };
+      const messages = state.messages[cid] || [];
+      const messageIndex = messages.findIndex(
+        (m) => m.tempId === tempId || m.id === tempId,
+      );
+
+      if (messageIndex !== -1) {
+        const updatedMessages = [...messages];
+        updatedMessages[messageIndex] = finalMessage;
+        return {
+          ...state,
+          messages: {
+            ...state.messages,
+            [cid]: updatedMessages,
+          },
+        };
+      } else {
+        return {
+          ...state,
+          messages: {
+            ...state.messages,
+            [cid]: [...messages, finalMessage],
+          },
+        };
+      }
     }
 
     case "CLEAR_MESSAGES":
@@ -243,21 +280,19 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         socketEvents.RECEIVE_MESSAGE,
         (message: Message & { tempId?: string }) => {
           console.log("📩 [Socket] Received 'receive_message' event:", message);
-          // The message from the server will contain the tempId if it was sent from this client
           if (message.tempId) {
             dispatch({
               type: "REPLACE_MESSAGE",
               payload: { tempId: message.tempId, finalMessage: message },
             });
           } else {
-            // This handles messages received from other users
             dispatch({ type: "ADD_MESSAGE", payload: message });
           }
         },
       );
 
       socketref.current.on(
-        socketEvents.UNREAD_NOTIFICATION,
+        socketEvents.UNREAD_MESSAGE_NOTIFICATION,
         (notif: UnReadnotification) => {
           console.log(
             "🔔 [Socket] Received 'unread_message_notification' event:",
@@ -295,26 +330,13 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       const previousConversationId = previousConversationIdRef.current;
       const activeConversationId = state.activeConversationId;
 
-      if (
-        previousConversationId &&
-        previousConversationId !== activeConversationId
-      ) {
-        socketref.current.emit(
-          socketEvents.LEAVE_CONVERSATION,
-          previousConversationId,
-        );
+      if (previousConversationId !== activeConversationId) {
+        socketref.current.emit(socketEvents.SWITCH_CONVERSATION, {
+          oldConversationId: previousConversationId,
+          newConversationId: activeConversationId,
+        });
         console.log(
-          `🚪 [Socket] Emitted 'leave_conversation' for room: ${previousConversationId}`,
-        );
-      }
-
-      if (activeConversationId) {
-        socketref.current.emit(
-          socketEvents.JOIN_CONVERSATION,
-          activeConversationId,
-        );
-        console.log(
-          `🚪 [Socket] Emitted 'join_conversation' for room: ${activeConversationId}`,
+          `🚪 [Socket] Emitted 'switch_conversation' from ${previousConversationId} to ${activeConversationId}`,
         );
       }
 

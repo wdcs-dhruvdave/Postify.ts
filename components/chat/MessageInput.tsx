@@ -36,6 +36,7 @@ export const MessageInput = ({
         mediaUrl: null,
         mediaType: null,
         status: "sending",
+        sender: user,
       },
     });
 

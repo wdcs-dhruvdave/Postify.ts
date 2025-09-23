@@ -9,12 +9,13 @@ export const socketEvents = {
   CONNECT_ERROR: "connect_error",
   DISCONNECT: "disconnect",
   RECEIVE_MESSAGE: "receive_message",
-  UNREAD_NOTIFICATION: "unread_notification",
+  UNREAD_MESSAGE_NOTIFICATION: "unread_message_notification",
   LEAVE_CONVERSATION: "leave_conversation",
   JOIN_CONVERSATION: "join_conversation",
   SEND_MESSAGE: "send_message",
   NOTIFICATION: "notification",
   JOIN_USER: "join_user",
+  SWITCH_CONVERSATION: "switch_conversation",
 };
 
 export const CHAT_UI_STRINGS = {

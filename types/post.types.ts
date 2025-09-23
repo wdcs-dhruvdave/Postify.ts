@@ -18,6 +18,12 @@ export type Post = {
   user_has_disliked: boolean;
   user_has_liked: boolean;
   category_id: string;
+  category?: {
+    id: string;
+    name: string;
+    description?: string;
+    slug?: string;
+  };
 };
 
 export type PostFormData = {

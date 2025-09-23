@@ -41,7 +41,6 @@ export const PostCard = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [userListTitle, setUserListTitle] = useState("");
-
   const [isUserListModalOpen, setIsUserListModalOpen] = useState(false);
   const [isModalLoading, setIsModalLoading] = useState(false);
   const [likers, setLikers] = useState<PublicUser[]>([]);
@@ -68,7 +67,6 @@ export const PostCard = ({
     } else {
       await fetchPostDislikers(post.id);
     }
-
     setIsUserListModalOpen(true);
   };
 
@@ -78,11 +76,7 @@ export const PostCard = ({
       setIsModalLoading(true);
       setIsUserListModalOpen(true);
       const data = await getPostDislikes(id);
-      if (Array.isArray(data)) {
-        setLikers(data);
-      } else {
-        setLikers([]);
-      }
+      setLikers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching post dislikers:", error);
     } finally {
@@ -96,11 +90,7 @@ export const PostCard = ({
       setIsUserListModalOpen(true);
       setUserListTitle("Liked by");
       const data = await getPostLikersApi(id);
-      if (Array.isArray(data)) {
-        setLikers(data);
-      } else {
-        setLikers([]);
-      }
+      setLikers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching post likers:", error);
     } finally {
@@ -185,6 +175,7 @@ export const PostCard = ({
         </div>
 
         <h3 className="text-xl font-bold text-gray-900 mb-2">{post?.title}</h3>
+
         <p className="text-gray-700 mb-4 whitespace-pre-wrap">
           {post?.content_text || ""}
         </p>
@@ -208,6 +199,18 @@ export const PostCard = ({
               />
             )}
           </div>
+        )}
+
+        {post?.category && (
+          <span
+            className="inline-block bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 rounded-full mb-3 cursor-pointer hover:bg-blue-200 transition"
+            onClick={() =>
+              post.category?.slug &&
+              router.push(`/category/${post.category.slug}`)
+            }
+          >
+            {post.category.name}
+          </span>
         )}
 
         <div className="flex items-center text-gray-500 space-x-6">

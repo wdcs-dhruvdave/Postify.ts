@@ -55,6 +55,23 @@ export const getCategories = async () => {
   }
 };
 
+export const getCategory = async (id: string) => {
+  try {
+    const response = await apiClient.get(POST_API.CATEGORY(id));
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to fetch category. Please try again later.",
+      );
+    }
+    throw new Error(
+      "An unexpected error occurred while fetching category. Please try again.",
+    );
+  }
+};
+
 export const getPosts = async (page: number = 1, limit: number = 10) => {
   try {
     const response = await apiClient.get(POST_API.GET_POSTS, {
@@ -79,6 +96,13 @@ export const getFeed = async (page = 1, limit = 10) => {
     const response = await apiClient.get(POST_API.FEED, {
       params: { page, limit },
     });
+    const postsWithCategories = await Promise.all(
+      response.data.posts.map(async (post) => {
+        const category = await getCategory(post.category_id);
+        return { ...post, category };
+      }),
+    );
+    response.data.posts = postsWithCategories || [];
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -89,6 +113,36 @@ export const getFeed = async (page = 1, limit = 10) => {
     }
     throw new Error(
       "An unexpected error occurred while fetching the feed. Please try again.",
+    );
+  }
+};
+
+export const getRecommendedPosts = async (page = 1, limit = 10) => {
+  try {
+    const response = await apiClient.get(POST_API.RECOMMENDED, {
+      params: { page, limit },
+    });
+
+    const postsWithCategories = await Promise.all(
+      response.data.posts.map(async (post) => {
+        const category = await getCategory(post.category_id);
+        return { ...post, category };
+      }),
+    );
+
+    return {
+      posts: postsWithCategories || [],
+      pagination: response.data.pagination || { hasNextPage: false },
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to fetch recommended posts. Please try again later.",
+      );
+    }
+    throw new Error(
+      "An unexpected error occurred while fetching recommended posts. Please try again.",
     );
   }
 };

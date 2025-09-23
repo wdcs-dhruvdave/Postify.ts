@@ -1,17 +1,23 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { Post } from "@/types/post.types";
 import {
   getFeed,
+  getRecommendedPosts,
+  getPosts,
   likePost,
   unlikePost,
   dislikePost,
   undislikePost,
-  getPosts,
+  deletePost,
 } from "@/utils/Apis/postApi";
 import { isAuthenticated } from "@/utils/auth";
 
-export const usePosts = (isLoggedIn: boolean | null) => {
+type Mode = "feed" | "recommended" | "public";
+
+export const usePosts = (isLoggedIn: boolean | null, mode: Mode = "feed") => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -19,49 +25,52 @@ export const usePosts = (isLoggedIn: boolean | null) => {
 
   const fetchPosts = useCallback(
     async (pageNum: number) => {
-      if (isLoggedIn) {
-        setLoading(true);
-        try {
-          const data = await getFeed(pageNum);
-          setPosts((prev) =>
-            pageNum === 1 ? data.posts : [...prev, ...data.posts],
-          );
-          setHasNextPage(data.pagination.hasNextPage);
-          setPage(pageNum);
-        } catch (error) {
-          console.error("Failed to fetch feed:", error);
-          toast.error("Could not fetch feed.");
-        } finally {
-          setLoading(false);
+      if (pageNum > 1 && !hasNextPage) return;
+
+      setLoading(true);
+      try {
+        let apiCall;
+        if (mode === "feed" && isLoggedIn) {
+          apiCall = getFeed;
+        } else if (mode === "recommended") {
+          apiCall = getRecommendedPosts;
+        } else {
+          apiCall = getPosts;
         }
-      } else {
-        setLoading(true);
-        try {
-          const data = await getPosts(pageNum);
-          setPosts((prev) =>
-            pageNum === 1 ? data.posts : [...prev, ...data.posts],
-          );
-          setHasNextPage(data.pagination.hasNextPage);
+
+        const data = await apiCall(pageNum);
+
+        if (data.posts.length === 0) {
+          setHasNextPage(false);
+        } else {
+          setPosts((prev) => {
+            const existingIds = new Set(prev.map((p) => p.id));
+            const newUniquePosts = data.posts.filter(
+              (p) => !existingIds.has(p.id),
+            );
+            return pageNum === 1 ? data.posts : [...prev, ...newUniquePosts];
+          });
           setPage(pageNum);
-        } catch (error) {
-          console.error("Failed to fetch posts:", error);
-          toast.error("Could not fetch posts.");
-        } finally {
-          setLoading(false);
         }
+        setHasNextPage(data.pagination.hasNextPage);
+      } catch (error) {
+        if (error instanceof Error) toast.error(error.message);
+        else toast.error("Could not fetch posts.");
+      } finally {
+        setLoading(false);
       }
     },
-    [isLoggedIn],
+    [isLoggedIn, mode, hasNextPage],
   );
 
   useEffect(() => {
-    if (isLoggedIn !== null) {
+    if (isLoggedIn !== null || mode === "recommended") {
       setPosts([]);
       setPage(1);
       setHasNextPage(true);
       fetchPosts(1);
     }
-  }, [isLoggedIn, fetchPosts]);
+  }, [isLoggedIn, mode, fetchPosts]);
 
   const loadMorePosts = useCallback(() => {
     if (!loading && hasNextPage) {
@@ -73,83 +82,98 @@ export const usePosts = (isLoggedIn: boolean | null) => {
     setPosts((prevPosts) => [newPost, ...prevPosts]);
   }, []);
 
-  const toggleLike = useCallback(
-    (postId: string) => {
-      if (!isAuthenticated())
-        return toast.error("Please log in to like posts.");
+  const updatePostInState = useCallback((updatedPost: Post) => {
+    setPosts((prev) =>
+      prev.map((p) => (p.id === updatedPost.id ? updatedPost : p)),
+    );
+  }, []);
 
+  const removePost = useCallback(
+    async (postId: string) => {
+      if (!window.confirm("Are you sure you want to delete this post?")) return;
       const originalPosts = posts;
-      const post = originalPosts.find((p) => p.id === postId);
-      if (!post) return;
+      setPosts((prev) => prev.filter((p) => p.id !== postId)); // Optimistic update
+      try {
+        await deletePost(postId);
+        toast.success("Post deleted successfully.");
+      } catch (error) {
+        setPosts(originalPosts);
+        if (error instanceof Error) toast.error(error.message);
+      }
+    },
+    [posts],
+  );
 
-      setPosts((currentPosts) =>
-        currentPosts.map((p) =>
-          p.id === postId
-            ? {
-                ...p,
-                likes_count: p.user_has_liked
-                  ? p.likes_count - 1
-                  : p.likes_count + 1,
-                dislikes_count: p.user_has_disliked
-                  ? p.dislikes_count - 1
-                  : p.dislikes_count,
-                user_has_liked: !p.user_has_liked,
-                user_has_disliked: false,
-              }
-            : p,
-        ),
-      );
+  const toggleLike = useCallback((postId: string) => {
+    if (!isAuthenticated()) return toast.error("Please log in to like posts.");
+
+    let originalPosts: Post[] = [];
+    setPosts((currentPosts) => {
+      originalPosts = [...currentPosts];
+      const post = originalPosts.find((p) => p.id === postId);
+      if (!post) return currentPosts;
 
       const apiCall = post.user_has_liked ? unlikePost : likePost;
       apiCall(postId).catch(() => {
         toast.error("Failed to update like.");
         setPosts(originalPosts);
       });
-    },
-    [posts],
-  );
 
-  const toggleDislike = useCallback(
-    (postId: string) => {
-      if (!isAuthenticated())
-        return toast.error("Please log in to dislike posts.");
-
-      const originalPosts = posts;
-      const post = originalPosts.find((p) => p.id === postId);
-      if (!post) return;
-
-      setPosts((currentPosts) =>
-        currentPosts.map((p) =>
-          p.id === postId
-            ? {
-                ...p,
-                dislikes_count: p.user_has_disliked
-                  ? p.dislikes_count - 1
-                  : p.dislikes_count + 1,
-                likes_count: p.user_has_liked
-                  ? p.likes_count - 1
-                  : p.likes_count,
-                user_has_disliked: !p.user_has_disliked,
-                user_has_liked: false,
-              }
-            : p,
-        ),
+      return currentPosts.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              likes_count: p.user_has_liked
+                ? p.likes_count - 1
+                : p.likes_count + 1,
+              dislikes_count: p.user_has_disliked
+                ? p.dislikes_count - 1
+                : p.dislikes_count,
+              user_has_liked: !p.user_has_liked,
+              user_has_disliked: false,
+            }
+          : p,
       );
+    });
+  }, []);
+
+  const toggleDislike = useCallback((postId: string) => {
+    if (!isAuthenticated())
+      return toast.error("Please log in to dislike posts.");
+    let originalPosts: Post[] = [];
+    setPosts((currentPosts) => {
+      originalPosts = [...currentPosts];
+      const post = originalPosts.find((p) => p.id === postId);
+      if (!post) return currentPosts;
 
       const apiCall = post.user_has_disliked ? undislikePost : dislikePost;
       apiCall(postId).catch(() => {
         toast.error("Failed to update dislike.");
         setPosts(originalPosts);
       });
-    },
-    [posts],
-  );
+
+      return currentPosts.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              dislikes_count: p.user_has_disliked
+                ? p.dislikes_count - 1
+                : p.dislikes_count + 1,
+              likes_count: p.user_has_liked ? p.likes_count - 1 : p.likes_count,
+              user_has_disliked: !p.user_has_disliked,
+              user_has_liked: false,
+            }
+          : p,
+      );
+    });
+  }, []);
 
   return {
     posts,
-    setPosts,
     loading,
     addPost,
+    updatePostInState,
+    removePost,
     toggleLike,
     toggleDislike,
     loadMorePosts,

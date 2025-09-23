@@ -3,7 +3,14 @@
 import { TOKEN_KEY } from "@/constants/auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Settings, Search, MessageCircle, User } from "lucide-react";
+import {
+  Home,
+  Settings,
+  Search,
+  MessageCircle,
+  User,
+  Star,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 const Sidebar = () => {
@@ -27,6 +34,7 @@ const Sidebar = () => {
 
   if (mounted && isAuthenticated) {
     navItems.push(
+      { name: "For You", href: "/foryou", icon: <Star size={20} /> },
       { name: "Explore", href: "/Explore", icon: <Search size={20} /> },
       { name: "Messages", href: "/chat", icon: <MessageCircle size={20} /> },
       {

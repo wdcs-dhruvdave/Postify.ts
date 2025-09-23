@@ -9,6 +9,7 @@ import { useInView } from "react-intersection-observer";
 import { PublicUser } from "@/types/user.type";
 import { ChatHeader } from "./ChatHeader";
 import { MessageSkeleton } from "./skeletons/MessageSkeleton";
+import { Message } from "@/types/chat.types";
 
 export const ChatWindow = ({ user }: { user: PublicUser }) => {
   const { state, dispatch } = useChat();
@@ -16,8 +17,13 @@ export const ChatWindow = ({ user }: { user: PublicUser }) => {
 
   const [pageNum, setPageNum] = useState(CHAT_MAGIC_NUMBERS.DEFAULT_PAGE_NUM);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [activeMessages, setActiveMessages] = useState<Message[]>([]);
 
-  const activeMessages = messages[activeConversationId || ""] || [];
+  useEffect(() => {
+    if (activeConversationId) {
+      setActiveMessages(messages[activeConversationId] || []);
+    }
+  }, [messages, activeConversationId]);
 
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.1,
