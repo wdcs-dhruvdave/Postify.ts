@@ -25,6 +25,7 @@ export const POST_API = {
   CATEGORY: (id: string) => `/posts/categories/${id}`,
   GET_POSTS: "/posts",
   FEED: "/posts/feed",
+  RECOMMENDED: "/posts/recommended",
   LIKE: (id: string) => `/posts/${id}/like`,
   UNLIKE: (id: string) => `/posts/${id}/like`,
   DISLIKE: (id: string) => `/posts/${id}/dislike`,

@@ -9,6 +9,7 @@ import { useInView } from "react-intersection-observer";
 import { PublicUser } from "@/types/user.type";
 import { ChatHeader } from "./ChatHeader";
 import { MessageSkeleton } from "./skeletons/MessageSkeleton";
+import { Message } from "@/types/chat.types";
 
 export const ChatWindow = ({ user }: { user: PublicUser }) => {
   const { state, dispatch } = useChat();

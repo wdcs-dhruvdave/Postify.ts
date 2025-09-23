@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 import { PostCard } from "@/components/post/Postcard";
 import { PostCardSkeleton } from "@/components/post/PostCardSkeleton";
 import { CreatePostModal } from "@/components/post/CreatePostModal";
 import { CommentModal } from "@/components/comment/CommentModal";
-import { isAuthenticated } from "@/utils/auth";
 import { usePosts } from "@/utils/hooks/usePost";
-import { RightSidebar } from "@/components/layout/RightSidebar";
-import { WelcomeBanner } from "@/components/layout/WelcomeBanner";
-import { CreatePostWidget } from "@/components/post/CreatePostWidget";
-import { Post } from "@/types/post.types";
+import { isAuthenticated } from "@/utils/auth";
+import { useInView } from "react-intersection-observer";
 import { PublicUser } from "@/types/user.type";
 import Sidebar from "@/components/layout/Sidebar";
-import { useInView } from "react-intersection-observer";
+import { RightSidebar } from "@/components/layout/RightSidebar";
 import { RightSidebarSkeleton } from "@/components/layout/RightSidebarSkeleton";
+import { CreatePostWidget } from "@/components/post/CreatePostWidget";
+import { WelcomeBanner } from "@/components/layout/WelcomeBanner";
 
 const postVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -23,31 +23,27 @@ const postVariants = {
   exit: { opacity: 0, y: -20 },
 };
 
-export default function FeedPage() {
-  const { ref, inView } = useInView({
-    threshold: 0.5,
-    triggerOnce: false,
-  });
+export default function ForYouPage() {
+  const { ref, inView } = useInView({ threshold: 0.5, triggerOnce: false });
 
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
-  const [postToEdit, setPostToEdit] = useState<Post | null>(null);
+  const [currentUser, setCurrentUser] = useState<PublicUser | null>(null);
+  const [postToEdit, setPostToEdit] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewingCommentsOfPostId, setViewingCommentsOfPostId] = useState<
     string | null
   >(null);
-  const [currentUser, setCurrentUser] = useState<PublicUser | null>(null);
 
   const {
     posts,
     loading,
     addPost,
     updatePostInState,
-    removePost,
     toggleLike,
     toggleDislike,
     loadMorePosts,
     hasNextPage,
-  } = usePosts(loggedIn);
+  } = usePosts(loggedIn, "recommended");
 
   useEffect(() => {
     const authStatus = isAuthenticated();
@@ -55,31 +51,20 @@ export default function FeedPage() {
 
     if (authStatus) {
       const userData = localStorage.getItem("user");
-      if (userData) {
-        setCurrentUser(JSON.parse(userData));
-      }
+      if (userData) setCurrentUser(JSON.parse(userData));
     }
   }, []);
 
   useEffect(() => {
-    if (inView && !loading && hasNextPage) {
-      loadMorePosts();
-    }
+    if (inView && !loading && hasNextPage) loadMorePosts();
   }, [inView, loading, hasNextPage, loadMorePosts]);
-
-  const handleDeletePost = useCallback(
-    async (postId: string) => {
-      await removePost(postId); // uses hook's removePost
-    },
-    [removePost],
-  );
 
   const handleOpenCreateModal = () => {
     setPostToEdit(null);
     setIsModalOpen(true);
   };
 
-  const handleOpenEditModal = (post: Post) => {
+  const handleOpenEditModal = (post) => {
     setPostToEdit(post);
     setIsModalOpen(true);
   };
@@ -89,7 +74,7 @@ export default function FeedPage() {
     setPostToEdit(null);
   };
 
-  const handlePostUpdated = (updatedPost: Post) => {
+  const handlePostUpdated = (updatedPost) => {
     updatePostInState(updatedPost);
   };
 
@@ -155,7 +140,9 @@ export default function FeedPage() {
                               post={post}
                               currentUserId={currentUser?.id}
                               onEdit={handleOpenEditModal}
-                              onDelete={handleDeletePost}
+                              onDelete={() =>
+                                toast.error("Cannot delete recommended posts.")
+                              }
                               onLikeToggle={toggleLike}
                               onDislikeToggle={toggleDislike}
                               onCommentClick={setViewingCommentsOfPostId}
@@ -187,10 +174,11 @@ export default function FeedPage() {
                     !loading && (
                       <div className="text-center py-16 px-4 bg-white rounded-lg shadow-md">
                         <h3 className="text-xl font-semibold text-gray-800">
-                          Your Feed is Empty
+                          Not Enough Data Yet
                         </h3>
                         <p className="text-gray-500 mt-2">
-                          Follow some users to see their posts here!
+                          Like, follow, and comment on a few more posts to help
+                          us build your personalized feed!
                         </p>
                       </div>
                     )

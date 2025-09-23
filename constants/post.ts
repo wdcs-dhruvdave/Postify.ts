@@ -2,6 +2,7 @@ export const postEndpoints = {
   list: "/posts",
   categories: "/posts/categories",
   feed: "/posts/feed",
+  recomended: "/posts/recommended",
   like: "/posts/:postId/like",
   dislike: "/posts/:postId/dislike",
   userPosts: "/posts/user/:username",
