@@ -8,6 +8,7 @@ import { Comment } from "@/types/comment.type";
 import { getComments, createComment } from "@/utils/Apis/commentApi";
 import { CommentItem } from "./CommentItem";
 import { CommentItemSkeleton } from "./CommentItemSkeleton";
+import { MESSAGES } from "@/constants/index";
 
 interface CommentModalProps {
   postId: string | null;
@@ -33,7 +34,7 @@ export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
           setComments(fetchedComments);
         } catch (error) {
           if (error instanceof Error) {
-            toast.error(error.message || "Failed to fetch comments.");
+            toast.error(error.message || MESSAGES.ERROR.FETCH_COMMENTS_FAILED);
           }
         } finally {
           setLoading(false);
@@ -85,7 +86,7 @@ export const CommentModal = ({ postId, onClose }: CommentModalProps) => {
       setReplyingTo(null);
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(error.message || "Failed to create comment.");
+        toast.error(error.message || MESSAGES.ERROR.COMMENT_CREATION_FAILED);
       }
     }
   };

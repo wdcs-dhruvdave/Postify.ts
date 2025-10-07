@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { updateUserProfile } from "@/utils/Apis/userApi";
 import { UserProfile } from "@/types/user.type";
 import { useEffect } from "react";
+import { MESSAGES } from "@/constants/index";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -54,7 +55,7 @@ export const EditProfileModal = ({
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("Failed to update profile.");
+        toast.error(MESSAGES.ERROR.USER_PROFILE_UPDATE_FAILED);
       }
     }
   };

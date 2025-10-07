@@ -1,8 +1,13 @@
 import axios from "axios";
 import { Comment } from "@/types/comment.type";
-import { BASE_URL, HEADERS, COMMENT_API } from "@/constants/api";
-import { TOKEN_KEY, AUTH_HEADER } from "@/constants/auth";
-import { errorMessages } from "@/constants/ui";
+import {
+  BASE_URL,
+  HEADERS,
+  COMMENT_API,
+  TOKEN_KEY,
+  AUTH_HEADER,
+  errorMessages,
+} from "@/constants/index";
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -50,9 +55,9 @@ export const createComment = async (
     return response.data;
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(error.message || "Failed to create comment.");
+      throw new Error(error.message || errorMessages.COMMENT_CREATION_FAILED);
     } else {
-      throw new Error("Failed to create comment.");
+      throw new Error(errorMessages.COMMENT_CREATION_FAILED);
     }
   }
 };

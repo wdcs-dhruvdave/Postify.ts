@@ -8,6 +8,7 @@ import { createPost, updatePost, getCategories } from "@/utils/Apis/postApi";
 import { PostFormData, Post } from "@/types/post.types";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { MESSAGES } from "@/constants/index";
 
 interface Category {
   id: string;
@@ -69,7 +70,9 @@ export const CreatePostModal = ({
           setCategories(fetchedCategories);
         } catch (error) {
           if (error instanceof Error) {
-            toast.error(error.message || "Failed to fetch categories.");
+            toast.error(
+              error.message || MESSAGES.ERROR.FETCH_CATEGORIES_FAILED,
+            );
           }
         }
       };
@@ -87,7 +90,7 @@ export const CreatePostModal = ({
       } else if (file.type.startsWith("video/")) {
         setMediaType("video");
       } else {
-        toast.error("Unsupported file type.");
+        toast.error(MESSAGES.ERROR.UNSUPPORTED_FILE_TYPE);
         setMediaType(null);
         setMediaPreview(null);
         return;
@@ -120,7 +123,7 @@ export const CreatePostModal = ({
         onPostCreated(response.post);
         onClose();
       } else {
-        throw new Error("Failed to receive a valid response from the server.");
+        throw new Error(MESSAGES.ERROR.INVALID_SERVER_RESPONSE);
       }
     } catch (error) {
       if (error instanceof Error) {

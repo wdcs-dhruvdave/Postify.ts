@@ -1,6 +1,5 @@
 "use client";
 
-import { TOKEN_KEY } from "@/constants/auth";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -12,6 +11,13 @@ import { PublicUser } from "@/types/user.type";
 import NotificationList from "../NotificationList";
 import { useNotifications } from "@/utils/context/NotificationsContext";
 import { NavbarSkeleton } from "./NavbarSkeleton";
+import {
+  MESSAGES,
+  LABELS,
+  ROUTES,
+  DEFAULTS,
+  TOKEN_KEY,
+} from "@/constants/index";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -48,8 +54,8 @@ export default function Navbar() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem("user");
     setUser(null);
-    toast.success("Logged out successfully");
-    router.push("/login");
+    toast.success(MESSAGES.SUCCESS.LOGOUT_SUCCESSFUL);
+    router.push(ROUTES.LOGIN);
   };
 
   const NavLink = ({
@@ -93,7 +99,7 @@ export default function Navbar() {
     <header className="bg-white/80 backdrop-blur-md border-b shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         <Link
-          href={user ? "/feedpage" : "/"}
+          href={user ? ROUTES.FEED : ROUTES.HOME}
           className="text-2xl font-bold text-blue-600"
         >
           Postify
@@ -129,16 +135,15 @@ export default function Navbar() {
                 </AnimatePresence>
               </div>
               <div>
-                <p>Hello, {user.username}</p>
+                <p>
+                  {MESSAGES.GREETING.HELLO}, {user.username}
+                </p>
               </div>
 
               <div className="relative">
                 <button onClick={() => setIsProfileMenuOpen((prev) => !prev)}>
                   <Image
-                    src={
-                      user.avatar_url?.trim() ||
-                      "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
-                    }
+                    src={user.avatar_url?.trim() || DEFAULTS.AVATAR_URL}
                     alt={user.name || user.username}
                     width={36}
                     height={36}
@@ -155,16 +160,16 @@ export default function Navbar() {
                       className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border z-10"
                     >
                       <Link
-                        href={`/profile/${user.username}`}
+                        href={`${ROUTES.PROFILE}/${user.username}`}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        My Profile
+                        {LABELS.NAVIGATION.MY_PROFILE}
                       </Link>
                       <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                       >
-                        Logout
+                        {LABELS.BUTTONS.LOGOUT}
                       </button>
                     </motion.div>
                   )}
@@ -173,12 +178,12 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <NavLink href="/login">Login</NavLink>
+              <NavLink href={ROUTES.LOGIN}>{LABELS.BUTTONS.LOGIN}</NavLink>
               <Link
-                href="/signup"
+                href={ROUTES.SIGNUP}
                 className="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
               >
-                Sign Up
+                {LABELS.BUTTONS.SIGN_UP}
               </Link>
             </>
           )}
@@ -202,20 +207,22 @@ export default function Navbar() {
             <nav className="flex flex-col space-y-4 p-4">
               {user ? (
                 <>
-                  <NavLink href={`/profile/${user.username}`}>
-                    My Profile
+                  <NavLink href={`${ROUTES.PROFILE}/${user.username}`}>
+                    {LABELS.NAVIGATION.MY_PROFILE}
                   </NavLink>
                   <button
                     onClick={handleLogout}
                     className="text-left text-red-600"
                   >
-                    Logout
+                    {LABELS.BUTTONS.LOGOUT}
                   </button>
                 </>
               ) : (
                 <>
-                  <NavLink href="/login">Login</NavLink>
-                  <NavLink href="/signup">Sign Up</NavLink>
+                  <NavLink href={ROUTES.LOGIN}>{LABELS.BUTTONS.LOGIN}</NavLink>
+                  <NavLink href={ROUTES.SIGNUP}>
+                    {LABELS.BUTTONS.SIGN_UP}
+                  </NavLink>
                 </>
               )}
             </nav>

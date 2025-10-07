@@ -1,28 +1,41 @@
-import { z } from 'zod';
+import { z } from "zod";
+import { VALIDATION } from "@/constants/index";
 
 export const signupFormSchema = z.object({
   username: z
     .string()
     .trim()
-    .min(3, 'Username must be at least 3 characters')
-    .max(20, 'Username must be at most 20 characters')
-    .regex(/^[a-zA-Z0-9_]+$/, 'Only letters, numbers, and underscores allowed'),
+    .min(
+      VALIDATION.USERNAME.MIN_LENGTH,
+      VALIDATION.USERNAME.MESSAGES.MIN_LENGTH,
+    )
+    .max(
+      VALIDATION.USERNAME.MAX_LENGTH,
+      VALIDATION.USERNAME.MESSAGES.MAX_LENGTH,
+    )
+    .regex(VALIDATION.USERNAME.PATTERN, VALIDATION.USERNAME.MESSAGES.PATTERN),
 
   email: z
     .string()
     .trim()
-    .email('Invalid email address')
+    .email(VALIDATION.EMAIL.MESSAGES.INVALID)
     .transform((val) => val.toLowerCase()),
 
   password: z
     .string()
-    .min(6, 'Password must be at least 6 characters')
-    .max(20, 'Password must be at most 20 characters'),
+    .min(
+      VALIDATION.PASSWORD.MIN_LENGTH,
+      VALIDATION.PASSWORD.MESSAGES.MIN_LENGTH,
+    )
+    .max(
+      VALIDATION.PASSWORD.MAX_LENGTH,
+      VALIDATION.PASSWORD.MESSAGES.MAX_LENGTH,
+    ),
 
   name: z
     .string()
-    .min(3, 'Name must be at least 3 characters')
-    .max(30, 'Name must be at most 30 characters')
+    .min(VALIDATION.NAME.MIN_LENGTH, VALIDATION.NAME.MESSAGES.MIN_LENGTH)
+    .max(VALIDATION.NAME.MAX_LENGTH, VALIDATION.NAME.MESSAGES.MAX_LENGTH)
     .trim()
     .optional(),
 });

@@ -1,8 +1,14 @@
 import { PublicUser } from "@/types/user.type";
 import axios from "axios";
-import { BASE_URL, HEADERS, USER_API } from "@/constants/api";
-import { TOKEN_KEY, AUTH_HEADER } from "@/constants/auth";
-import { errorMessages } from "@/constants/ui";
+import {
+  BASE_URL,
+  HEADERS,
+  USER_API,
+  TOKEN_KEY,
+  AUTH_HEADER,
+  errorMessages,
+  MESSAGES,
+} from "@/constants/index";
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -45,7 +51,7 @@ export const getFollowSuggestions = async () => {
     const response = await apiClient.get(USER_API.SUGGESTIONS);
     return response.data;
   } catch (err) {
-    throw handleError(err, "Failed to get suggestions.");
+    throw handleError(err, MESSAGES.ERROR.USER_SUGGESTIONS_FAILED);
   }
 };
 
@@ -54,7 +60,7 @@ export const followUser = async (userId: string) => {
     const response = await apiClient.post(USER_API.FOLLOW(userId));
     return response.data;
   } catch (err) {
-    throw handleError(err, "Failed to follow user.");
+    throw handleError(err, MESSAGES.ERROR.USER_FOLLOW_FAILED);
   }
 };
 
@@ -63,27 +69,25 @@ export const unfollowUser = async (userId: string) => {
     const response = await apiClient.delete(USER_API.UNFOLLOW(userId));
     return response.data;
   } catch (err) {
-    throw handleError(err, "Failed to unfollow user.");
+    throw handleError(err, MESSAGES.ERROR.USER_UNFOLLOW_FAILED);
   }
 };
 
 export const getUserProfile = async (username: string) => {
   try {
-    const response = await apiClient.get(USER_API.GET_BY_USERNAME(username));
+    const response = await apiClient.get(USER_API.BY_USERNAME(username));
     return response.data;
   } catch (err) {
     throw handleError(
       err,
-      `Failed to fetch profile for user "${username}". ${errorMessages.tryAgain}`,
+      `${MESSAGES.ERROR.USER_PROFILE_FETCH_FAILED} "${username}". ${errorMessages.tryAgain}`,
     );
   }
 };
 
 export const getUserPosts = async (username: string) => {
   try {
-    const response = await apiClient.get(
-      USER_API.GET_POSTS_BY_USERNAME(username),
-    );
+    const response = await apiClient.get(USER_API.POSTS_BY_USERNAME(username));
     return response.data;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
@@ -105,7 +109,7 @@ export const updateUserProfile = async (data: Partial<PublicUser>) => {
   } catch (err) {
     throw handleError(
       err,
-      `Failed to update your profile. ${errorMessages.tryAgain}`,
+      `${MESSAGES.ERROR.USER_PROFILE_UPDATE_FAILED} ${errorMessages.tryAgain}`,
     );
   }
 };
@@ -119,7 +123,7 @@ export const updateUserPrivacy = async (isPrivate: boolean) => {
   } catch (err) {
     throw handleError(
       err,
-      `Failed to update your privacy settings. ${errorMessages.tryAgain}`,
+      `${MESSAGES.ERROR.USER_PRIVACY_UPDATE_FAILED} ${errorMessages.tryAgain}`,
     );
   }
 };
@@ -131,7 +135,7 @@ export const getFollowers = async (username: string) => {
   } catch (err) {
     throw handleError(
       err,
-      `Failed to fetch followers for "${username}". ${errorMessages.tryAgain}`,
+      `${MESSAGES.ERROR.USER_FOLLOWERS_FETCH_FAILED} "${username}". ${errorMessages.tryAgain}`,
     );
   }
 };
@@ -143,7 +147,7 @@ export const getFollowing = async (username: string) => {
   } catch (err) {
     throw handleError(
       err,
-      `Failed to fetch following list for "${username}". ${errorMessages.tryAgain}`,
+      `${MESSAGES.ERROR.USER_FOLLOWING_FETCH_FAILED} "${username}". ${errorMessages.tryAgain}`,
     );
   }
 };

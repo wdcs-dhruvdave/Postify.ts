@@ -1,9 +1,15 @@
 import axios from "axios";
 import { Conversation, Message } from "@/types/chat.types";
-import { CHAT_API_BASE_URL, HEADERS, CHAT_API } from "@/constants/api";
-import { TOKEN_KEY, AUTH_HEADER } from "@/constants/auth";
-import { CHAT_MAGIC_NUMBERS } from "@/constants/chat";
-import { errorMessages } from "@/constants/ui";
+import {
+  CHAT_API_BASE_URL,
+  HEADERS,
+  CHAT_API,
+  TOKEN_KEY,
+  AUTH_HEADER,
+  CHAT_MAGIC_NUMBERS,
+  errorMessages,
+  MESSAGES,
+} from "@/constants/index";
 
 const chatApiClient = axios.create({
   baseURL: CHAT_API_BASE_URL,
@@ -110,7 +116,7 @@ export const sendMessage = async (conversationId: string, content: string) => {
     );
 
     if (!response.ok) {
-      throw new Error("Failed to send message");
+      throw new Error(MESSAGES.ERROR.CHAT_SEND_MESSAGE_FAILED_SIMPLE);
     }
 
     return await response.json();

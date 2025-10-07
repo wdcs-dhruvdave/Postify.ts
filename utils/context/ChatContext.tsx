@@ -1,8 +1,14 @@
 "use client";
-import { TOKEN_KEY } from "@/constants/auth";
-import { CHAT_API_BASE_URL } from "@/constants/api";
-import { socketEvents, CHAT_MAGIC_NUMBERS } from "@/constants/chat";
-import { errorMessages } from "@/constants/ui";
+import {
+  TOKEN_KEY,
+  CHAT_API_BASE_URL,
+  socketEvents,
+  CHAT_MAGIC_NUMBERS,
+  MESSAGES,
+  CONFIG,
+  STORAGE_KEYS,
+  CHAT_ACTION_TYPES,
+} from "../../constants";
 import React, {
   createContext,
   useContext,
@@ -25,49 +31,62 @@ interface ChatState {
   loadingMessages: boolean;
 }
 
+// Chat action type using centralized constants
 type ChatAction =
-  | { type: "SET_LOADING_CONVERSATIONS"; payload: boolean }
-  | { type: "SET_CONVERSATIONS"; payload: Conversation[] }
-  | { type: "SET_LOADING_MESSAGES"; payload: boolean }
   | {
-      type: "SET_MESSAGES";
-      payload: { conversationId: string; messages: Message[] };
-    }
-  | { type: "ADD_MESSAGE"; payload: Message }
-  | { type: "UPDATE_CONVERSATION_NOTIFICATION"; payload: UnReadnotification }
-  | { type: "SET_ACTIVE_CONVERSATION"; payload: string | null }
-  | { type: "MARK_CONVERSATION_READ"; payload: string }
-  | {
-      type: "PREPEND_MESSAGES";
-      payload: { conversationId: string; messages: Message[] };
+      type: typeof CHAT_ACTION_TYPES.SET_LOADING_CONVERSATIONS;
+      payload: boolean;
     }
   | {
-      type: "REPLACE_MESSAGE";
+      type: typeof CHAT_ACTION_TYPES.SET_CONVERSATIONS;
+      payload: Conversation[];
+    }
+  | { type: typeof CHAT_ACTION_TYPES.SET_LOADING_MESSAGES; payload: boolean }
+  | {
+      type: typeof CHAT_ACTION_TYPES.SET_MESSAGES;
+      payload: { conversationId: string; messages: Message[] };
+    }
+  | { type: typeof CHAT_ACTION_TYPES.ADD_MESSAGE; payload: Message }
+  | {
+      type: typeof CHAT_ACTION_TYPES.UPDATE_CONVERSATION_NOTIFICATION;
+      payload: UnReadnotification;
+    }
+  | {
+      type: typeof CHAT_ACTION_TYPES.SET_ACTIVE_CONVERSATION;
+      payload: string | null;
+    }
+  | { type: typeof CHAT_ACTION_TYPES.MARK_CONVERSATION_READ; payload: string }
+  | {
+      type: typeof CHAT_ACTION_TYPES.PREPEND_MESSAGES;
+      payload: { conversationId: string; messages: Message[] };
+    }
+  | {
+      type: typeof CHAT_ACTION_TYPES.REPLACE_MESSAGE;
       payload: { tempId: string; finalMessage: Message };
     }
-  | { type: "CLEAR_MESSAGES"; payload: string };
+  | { type: typeof CHAT_ACTION_TYPES.CLEAR_MESSAGES; payload: string };
 
 const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
-  console.log(`[ChatReducer] Action Dispatched: ${action.type}`, {
+  console.log(MESSAGES.SOCKET_LOGS.ACTION_DISPATCHED, action.type, {
     payload: action.payload,
     currentState: state,
   });
 
   switch (action.type) {
-    case "SET_LOADING_CONVERSATIONS":
+    case CHAT_ACTION_TYPES.SET_LOADING_CONVERSATIONS:
       return { ...state, loadingConversations: action.payload };
 
-    case "SET_CONVERSATIONS":
+    case CHAT_ACTION_TYPES.SET_CONVERSATIONS:
       return {
         ...state,
         conversations: action.payload,
         loadingConversations: false,
       };
 
-    case "SET_LOADING_MESSAGES":
+    case CHAT_ACTION_TYPES.SET_LOADING_MESSAGES:
       return { ...state, loadingMessages: action.payload };
 
-    case "SET_MESSAGES":
+    case CHAT_ACTION_TYPES.SET_MESSAGES:
       return {
         ...state,
         messages: {
@@ -80,14 +99,12 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
         loadingMessages: false,
       };
 
-    case "ADD_MESSAGE": {
+    case CHAT_ACTION_TYPES.ADD_MESSAGE: {
       const msg = action.payload;
       const existing = state.messages[msg.conversationId] || [];
 
       if (existing.some((m) => m.id === msg.id)) {
-        console.log(
-          `[ChatReducer] ADD_MESSAGE skipped: Duplicate message ID ${msg.id}`,
-        );
+        console.log(`${MESSAGES.SOCKET_LOGS.ADD_MESSAGE_SKIPPED} ${msg.id}`);
         return state;
       }
 
@@ -112,7 +129,7 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
       };
     }
 
-    case "UPDATE_CONVERSATION_NOTIFICATION": {
+    case CHAT_ACTION_TYPES.UPDATE_CONVERSATION_NOTIFICATION: {
       const notif = action.payload;
       const isActive = state.activeConversationId === notif.conversationId;
       const conversationId = notif.conversationId;
@@ -158,10 +175,10 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
       };
     }
 
-    case "SET_ACTIVE_CONVERSATION":
+    case CHAT_ACTION_TYPES.SET_ACTIVE_CONVERSATION:
       return { ...state, activeConversationId: action.payload };
 
-    case "MARK_CONVERSATION_READ":
+    case CHAT_ACTION_TYPES.MARK_CONVERSATION_READ:
       return {
         ...state,
         conversations: state.conversations.map((c) =>
@@ -169,7 +186,7 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
         ),
       };
 
-    case "PREPEND_MESSAGES": {
+    case CHAT_ACTION_TYPES.PREPEND_MESSAGES: {
       const { conversationId, messages } = action.payload;
       const current = state.messages[conversationId] || [];
       const ids = new Set(current.map((m) => m.id));
@@ -184,7 +201,7 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
       };
     }
 
-    case "REPLACE_MESSAGE": {
+    case CHAT_ACTION_TYPES.REPLACE_MESSAGE: {
       const { tempId, finalMessage } = action.payload;
       const cid = finalMessage.conversationId;
       const messages = state.messages[cid] || [];
@@ -213,7 +230,7 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
       }
     }
 
-    case "CLEAR_MESSAGES":
+    case CHAT_ACTION_TYPES.CLEAR_MESSAGES:
       return {
         ...state,
         messages: { ...state.messages, [action.payload]: [] },
@@ -249,44 +266,67 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const previousConversationIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    console.log("[ChatProvider] Initializing socket effect...");
+    console.log(MESSAGES.SOCKET_LOGS.INITIALIZING);
     const token = localStorage.getItem(TOKEN_KEY);
 
     if (token && !socketref.current) {
-      console.log("[Socket] Token found, attempting to connect...");
+      console.log(MESSAGES.SOCKET_LOGS.TOKEN_FOUND);
       socketref.current = io(CHAT_API_BASE_URL || "", {
         auth: { token },
         reconnection: true,
-        reconnectionAttempts: CHAT_MAGIC_NUMBERS.SOCKET_RECONNECTION_ATTEMPTS,
+        reconnectionAttempts: CHAT_MAGIC_NUMBERS.RECONNECTION_ATTEMPTS,
+        reconnectionDelay: CONFIG.WEBSOCKET.RECONNECTION_DELAY,
+        reconnectionDelayMax: CONFIG.WEBSOCKET.RECONNECTION_DELAY_MAX,
+        timeout: CONFIG.WEBSOCKET.TIMEOUT,
+        forceNew: CONFIG.WEBSOCKET.FORCE_NEW,
+        transports: [...CONFIG.WEBSOCKET.TRANSPORTS],
       });
 
       socketref.current.on(socketEvents.CONNECT, () => {
         console.log(
-          "✅ [Socket] Connected successfully with ID:",
+          MESSAGES.SOCKET_LOGS.CONNECTED_SUCCESSFULLY,
           socketref.current?.id,
         );
         setIsConnected(true);
       });
+
       socketref.current.on(socketEvents.DISCONNECT, (reason) => {
-        console.log("🔌 [Socket] Disconnected:", reason);
+        console.log(MESSAGES.SOCKET_LOGS.DISCONNECTED, reason);
         setIsConnected(false);
+
+        if (reason === MESSAGES.SOCKET_REASONS.IO_SERVER_DISCONNECT) {
+          console.log(MESSAGES.SOCKET_LOGS.SERVER_DISCONNECT);
+          setTimeout(() => {
+            if (socketref.current) {
+              socketref.current.connect();
+            }
+          }, CONFIG.WEBSOCKET.RECONNECTION_DELAY);
+        }
       });
+
       socketref.current.on(socketEvents.CONNECT_ERROR, (err) => {
-        console.error("❌ [Socket] Connection Error:", err.message);
+        console.error(MESSAGES.SOCKET_LOGS.CONNECTION_ERROR, err.message);
         setIsConnected(false);
+
+        if (
+          err.message.includes(MESSAGES.SOCKET_REASONS.AUTHENTICATION) ||
+          err.message.includes(MESSAGES.SOCKET_REASONS.UNAUTHORIZED)
+        ) {
+          console.log(MESSAGES.SOCKET_LOGS.AUTH_FAILED);
+        }
       });
 
       socketref.current.on(
         socketEvents.RECEIVE_MESSAGE,
         (message: Message & { tempId?: string }) => {
-          console.log("📩 [Socket] Received 'receive_message' event:", message);
+          console.log(MESSAGES.SOCKET_LOGS.RECEIVED_MESSAGE, message);
           if (message.tempId) {
             dispatch({
-              type: "REPLACE_MESSAGE",
+              type: CHAT_ACTION_TYPES.REPLACE_MESSAGE,
               payload: { tempId: message.tempId, finalMessage: message },
             });
           } else {
-            dispatch({ type: "ADD_MESSAGE", payload: message });
+            dispatch({ type: CHAT_ACTION_TYPES.ADD_MESSAGE, payload: message });
           }
         },
       );
@@ -294,12 +334,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       socketref.current.on(
         socketEvents.UNREAD_MESSAGE_NOTIFICATION,
         (notif: UnReadnotification) => {
-          console.log(
-            "🔔 [Socket] Received 'unread_message_notification' event:",
-            notif,
-          );
+          console.log(MESSAGES.SOCKET_LOGS.RECEIVED_UNREAD, notif);
           dispatch({
-            type: "UPDATE_CONVERSATION_NOTIFICATION",
+            type: CHAT_ACTION_TYPES.UPDATE_CONVERSATION_NOTIFICATION,
             payload: notif,
           });
         },
@@ -308,7 +345,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       if (socketref.current) {
-        console.log("[Socket] Cleaning up and disconnecting socket...");
+        console.log(MESSAGES.SOCKET_LOGS.SOCKET_CLOSING);
         socketref.current.disconnect();
         socketref.current = null;
       }
@@ -317,10 +354,10 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (isConnected && socketref.current) {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const user = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER) || "{}");
       if (user.id) {
         socketref.current.emit(socketEvents.JOIN_USER, user.id);
-        console.log(`🚪 [Socket] Emitted 'join_user' for room: ${user.id}`);
+        console.log(`${MESSAGES.SOCKET_LOGS.JOIN_USER_EMITTED} ${user.id}`);
       }
     }
   }, [isConnected]);
@@ -336,7 +373,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           newConversationId: activeConversationId,
         });
         console.log(
-          `🚪 [Socket] Emitted 'switch_conversation' from ${previousConversationId} to ${activeConversationId}`,
+          `${MESSAGES.SOCKET_LOGS.SWITCH_CONVERSATION} ${previousConversationId} to ${activeConversationId}`,
         );
       }
 
@@ -352,13 +389,10 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       tempId: string;
     }) => {
       if (socketref.current && isConnected) {
-        console.log(
-          "📤 [Socket] Emitting 'send_message' with payload:",
-          payload,
-        );
+        console.log(MESSAGES.SOCKET_LOGS.SEND_MESSAGE_EMIT, payload);
         socketref.current.emit(socketEvents.SEND_MESSAGE, payload);
       } else {
-        console.error(errorMessages.CHAT_NOT_CONNECTED_SEND_MESSAGE);
+        console.error(MESSAGES.ERROR.SOCKET_NOT_CONNECTED);
       }
     },
     [isConnected],
@@ -381,7 +415,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 export const useChat = () => {
   const context = useContext(ChatContext);
   if (!context) {
-    throw new Error("useChat must be used within a ChatProvider");
+    throw new Error(MESSAGES.CONTEXT_ERRORS.USE_CHAT_OUTSIDE_PROVIDER);
   }
   return context;
 };

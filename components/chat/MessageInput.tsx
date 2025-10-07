@@ -1,6 +1,6 @@
 "use client";
-import { CHAT_UI_STRINGS } from "@/constants/chat";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { PLACEHOLDERS } from "@/constants/index";
 import { PaperAirplaneIcon, PaperClipIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/utils/hooks/useAuth";
 import { useChat } from "@/utils/context/ChatContext";
@@ -64,7 +64,7 @@ export const MessageInput = ({
       <input
         type="text"
         {...register("content", { required: true })}
-        placeholder={CHAT_UI_STRINGS.MESSAGE_INPUT_PLACEHOLDER}
+        placeholder={PLACEHOLDERS.CHAT_MESSAGE}
         autoComplete="off"
         className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-full border-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
       />

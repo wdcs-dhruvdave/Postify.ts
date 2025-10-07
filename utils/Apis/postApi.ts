@@ -1,7 +1,13 @@
 import axios from "axios";
 import { PostFormData } from "@/types/post.types";
-import { BASE_URL, HEADERS, POST_API } from "@/constants/api";
-import { TOKEN_KEY, AUTH_HEADER } from "@/constants/auth";
+import {
+  BASE_URL,
+  HEADERS,
+  POST_API,
+  TOKEN_KEY,
+  AUTH_HEADER,
+  MESSAGES,
+} from "@/constants/index";
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -23,18 +29,15 @@ apiClient.interceptors.request.use(
 
 export const createPost = async (data: PostFormData) => {
   try {
-    const response = await apiClient.post(POST_API.CREATE_POST, data);
+    const response = await apiClient.post(POST_API.CREATE, data);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to create post. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.POST_CREATION_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while creating the post. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.POST_CREATION_UNEXPECTED);
   }
 };
 
@@ -45,13 +48,10 @@ export const getCategories = async () => {
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to fetch categories. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.CATEGORIES_FETCH_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while fetching categories. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.CATEGORIES_FETCH_UNEXPECTED);
   }
 };
 
@@ -62,32 +62,26 @@ export const getCategory = async (id: string) => {
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to fetch category. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.CATEGORY_FETCH_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while fetching category. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.CATEGORY_FETCH_UNEXPECTED);
   }
 };
 
 export const getPosts = async (page: number = 1, limit: number = 10) => {
   try {
-    const response = await apiClient.get(POST_API.GET_POSTS, {
+    const response = await apiClient.get(POST_API.LIST, {
       params: { page, limit, _: new Date().getTime() },
     });
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to fetch posts. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.POSTS_FETCH_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while fetching posts. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.POSTS_FETCH_UNEXPECTED);
   }
 };
 
@@ -107,13 +101,10 @@ export const getFeed = async (page = 1, limit = 10) => {
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to fetch feed. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.FEED_FETCH_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while fetching the feed. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.FEED_FETCH_UNEXPECTED);
   }
 };
 
@@ -138,12 +129,10 @@ export const getRecommendedPosts = async (page = 1, limit = 10) => {
     if (axios.isAxiosError(error)) {
       throw new Error(
         error.response?.data?.message ||
-          "Failed to fetch recommended posts. Please try again later.",
+          MESSAGES.ERROR.RECOMMENDED_FETCH_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while fetching recommended posts. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.RECOMMENDED_FETCH_UNEXPECTED);
   }
 };
 
@@ -154,30 +143,24 @@ export const likePost = async (id: string) => {
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to like the post. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.POST_LIKE_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while liking the post. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.POST_LIKE_UNEXPECTED);
   }
 };
 
 export const unlikePost = async (id: string) => {
   try {
-    const response = await apiClient.delete(POST_API.UNLIKE(id));
+    const response = await apiClient.delete(POST_API.LIKE(id));
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to unlike the post. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.POST_UNLIKE_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while unliking the post. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.POST_UNLIKE_UNEXPECTED);
   }
 };
 
@@ -188,97 +171,79 @@ export const dislikePost = async (id: string) => {
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to dislike the post. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.POST_DISLIKE_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while disliking the post. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.POST_DISLIKE_UNEXPECTED);
   }
 };
 
 export const undislikePost = async (id: string) => {
   try {
-    const response = await apiClient.delete(POST_API.UNDISLIKE(id));
+    const response = await apiClient.delete(POST_API.DISLIKE(id));
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to remove dislike. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.POST_UNDISLIKE_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while removing dislike. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.POST_UNDISLIKE_UNEXPECTED);
   }
 };
 
 export const updatePost = async (id: string, data: Partial<PostFormData>) => {
   try {
-    const response = await apiClient.put(POST_API.UPDATE_POST(id), data);
+    const response = await apiClient.put(POST_API.UPDATE(id), data);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to update the post. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.POST_UPDATE_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while updating the post. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.POST_UPDATE_UNEXPECTED);
   }
 };
 
 export const deletePost = async (id: string) => {
   try {
-    const response = await apiClient.delete(POST_API.DELETE_POST(id));
+    const response = await apiClient.delete(POST_API.DELETE(id));
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to delete the post. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.POST_DELETE_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while deleting the post. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.POST_DELETE_UNEXPECTED);
   }
 };
 
 export const getPostLikers = async (id: string) => {
   try {
-    const res = await apiClient.get(POST_API.GET_LIKERS(id));
+    const res = await apiClient.get(POST_API.LIKERS(id));
     return res.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to fetch likers. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.LIKERS_FETCH_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while fetching likers. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.LIKERS_FETCH_UNEXPECTED);
   }
 };
 
 export const getPostDislikes = async (id: string) => {
   try {
-    const res = await apiClient.get(POST_API.GET_DISLIKERS(id));
+    const res = await apiClient.get(POST_API.DISLIKERS(id));
     return res.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message ||
-          "Failed to fetch dislikers. Please try again later.",
+        error.response?.data?.message || MESSAGES.ERROR.DISLIKERS_FETCH_FAILED,
       );
     }
-    throw new Error(
-      "An unexpected error occurred while fetching dislikers. Please try again.",
-    );
+    throw new Error(MESSAGES.ERROR.DISLIKERS_FETCH_UNEXPECTED);
   }
 };

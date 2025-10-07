@@ -1,5 +1,5 @@
 "use client";
-import { CHAT_UI_STRINGS, CHAT_MAGIC_NUMBERS } from "@/constants/chat";
+import { CHAT_UI_STRINGS, CHAT_MAGIC_NUMBERS } from "@/constants/index";
 import { useChat } from "@/utils/context/ChatContext";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
@@ -15,7 +15,9 @@ export const ChatWindow = ({ user }: { user: PublicUser }) => {
   const { state, dispatch } = useChat();
   const { activeConversationId, messages, loadingMessages } = state;
 
-  const [pageNum, setPageNum] = useState(CHAT_MAGIC_NUMBERS.DEFAULT_PAGE_NUM);
+  const [pageNum, setPageNum] = useState<number>(
+    CHAT_MAGIC_NUMBERS.DEFAULT_PAGE_NUM,
+  );
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [activeMessages, setActiveMessages] = useState<Message[]>([]);
 

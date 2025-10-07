@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { followUser, unfollowUser } from "@/utils/Apis/userApi";
+import { MESSAGES, LABELS, ROUTES, DEFAULTS } from "@/constants/index";
 
 export const UserItem = ({
   user,
@@ -32,8 +33,8 @@ export const UserItem = ({
       await apiCall(user.id);
       toast.success(
         originalFollowState
-          ? `Unfollowed @${user.username}`
-          : `Followed @${user.username}`,
+          ? `${MESSAGES.SUCCESS.UNFOLLOWED} @${user.username}`
+          : `${MESSAGES.SUCCESS.FOLLOWED} @${user.username}`,
       );
     } catch (error) {
       setIsFollowed(originalFollowState);
@@ -41,7 +42,9 @@ export const UserItem = ({
     }
   };
 
-  const buttonText = isFollowed ? "Following" : "Follow";
+  const buttonText = isFollowed
+    ? LABELS.BUTTONS.FOLLOWING
+    : LABELS.BUTTONS.FOLLOW;
   const buttonStyle = isFollowed
     ? "bg-white text-blue-600 border border-blue-600"
     : "bg-blue-100 text-blue-600";
@@ -49,14 +52,11 @@ export const UserItem = ({
   return (
     <div className="flex items-center justify-between">
       <Link
-        href={`/profile/${user.username}`}
+        href={`${ROUTES.PROFILE}/${user.username}`}
         className="flex items-center space-x-3 group"
       >
         <Image
-          src={
-            user.avatar_url ||
-            "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
-          }
+          src={user.avatar_url || DEFAULTS.AVATAR_URL}
           alt={user.name || user.username}
           width={40}
           height={40}

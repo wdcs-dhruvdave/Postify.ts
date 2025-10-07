@@ -1,6 +1,6 @@
 "use client";
 
-import { TOKEN_KEY } from "@/constants/auth";
+import { TOKEN_KEY } from "@/constants/index";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {

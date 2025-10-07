@@ -7,6 +7,7 @@ import { getFollowSuggestions, searchUsers } from "@/utils/Apis/userApi";
 import { PublicUser } from "@/types/user.type";
 import { UserItem } from "../user/UserItem";
 import { RightSidebarSkeleton } from "./RightSidebarSkeleton";
+import { MESSAGES, PLACEHOLDERS } from "@/constants/index";
 
 export const RightSidebar = () => {
   const [suggestions, setSuggestions] = useState<PublicUser[]>([]);
@@ -21,7 +22,7 @@ export const RightSidebar = () => {
         const data = await getFollowSuggestions();
         setSuggestions(data);
       } catch (error) {
-        console.error("Failed to fetch suggestions", error);
+        console.error(MESSAGES.ERROR.FETCH_SUGGESTIONS_FAILED, error);
       } finally {
         setLoading(false);
       }
@@ -41,7 +42,7 @@ export const RightSidebar = () => {
         const results = await searchUsers(searchQuery);
         setSearchResults(results);
       } catch (error) {
-        console.error("Search failed", error);
+        console.error(MESSAGES.ERROR.SEARCH_FAILED, error);
       } finally {
         setIsSearching(false);
       }
@@ -61,7 +62,7 @@ export const RightSidebar = () => {
       <div className="relative">
         <input
           type="text"
-          placeholder="Search users..."
+          placeholder={PLACEHOLDERS.SEARCH}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"

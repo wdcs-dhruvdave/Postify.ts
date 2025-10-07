@@ -1,4 +1,4 @@
-import { TOKEN_KEY } from "@/constants/auth";
+import { TOKEN_KEY } from "@/constants/index";
 
 export const isAuthenticated = (): boolean => {
   if (typeof window === "undefined") {

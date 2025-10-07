@@ -12,6 +12,7 @@ import {
   getPostDislikes,
   getPostLikers as getPostLikersApi,
 } from "@/utils/Apis/postApi";
+import { LABELS, DEFAULTS, MESSAGES, CONFIG, ROUTES } from "@/constants/index";
 
 interface PostCardProps {
   post: Post;
@@ -25,7 +26,11 @@ interface PostCardProps {
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: CONFIG.ANIMATION.DURATION_MEDIUM },
+  },
 };
 
 export const PostCard = ({
@@ -47,10 +52,9 @@ export const PostCard = ({
 
   const author = post?.author || {
     id: "",
-    name: "Anonymous",
-    username: "anonymous",
-    avatar_url:
-      "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg",
+    name: DEFAULTS.ANONYMOUS_NAME,
+    username: DEFAULTS.ANONYMOUS_USERNAME,
+    avatar_url: DEFAULTS.AVATAR_URL,
   };
 
   const isAuthor = !!currentUserId && currentUserId === author.id;
@@ -72,13 +76,13 @@ export const PostCard = ({
 
   const fetchPostDislikers = async (id: string) => {
     try {
-      setUserListTitle("Disliked by");
+      setUserListTitle(LABELS.MODALS.DISLIKED_BY);
       setIsModalLoading(true);
       setIsUserListModalOpen(true);
       const data = await getPostDislikes(id);
       setLikers(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error fetching post dislikers:", error);
+      console.error(MESSAGES.ERROR.FETCHING_DISLIKERS, error);
     } finally {
       setIsModalLoading(false);
     }
@@ -88,11 +92,11 @@ export const PostCard = ({
     try {
       setIsModalLoading(true);
       setIsUserListModalOpen(true);
-      setUserListTitle("Liked by");
+      setUserListTitle(LABELS.MODALS.LIKED_BY);
       const data = await getPostLikersApi(id);
       setLikers(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error fetching post likers:", error);
+      console.error(MESSAGES.ERROR.FETCHING_LIKERS, error);
     } finally {
       setIsModalLoading(false);
     }
@@ -130,7 +134,7 @@ export const PostCard = ({
                   }}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
-                  Edit
+                  {LABELS.BUTTONS.EDIT}
                 </button>
                 <button
                   onClick={() => {
@@ -139,7 +143,7 @@ export const PostCard = ({
                   }}
                   className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                 >
-                  Delete
+                  {LABELS.BUTTONS.DELETE}
                 </button>
               </div>
             )}
@@ -148,10 +152,7 @@ export const PostCard = ({
 
         <div className="flex items-center mb-4">
           <Image
-            src={
-              author.avatar_url ||
-              "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg"
-            }
+            src={author.avatar_url || DEFAULTS.AVATAR_URL}
             alt={author.name || author.username}
             width={40}
             height={40}
@@ -160,7 +161,7 @@ export const PostCard = ({
           />
           <div
             className="flex flex-col cursor-pointer"
-            onClick={() => router.push(`/profile/${author.username}`)}
+            onClick={() => router.push(`${ROUTES.PROFILE}/${author.username}`)}
           >
             <p className="font-bold text-gray-800">
               {author.name || author.username}
@@ -169,7 +170,7 @@ export const PostCard = ({
               @{author.username} ·{" "}
               {post?.createdAt
                 ? new Date(post.createdAt).toLocaleDateString()
-                : "Unknown date"}
+                : LABELS.DATES.UNKNOWN_DATE}
             </p>
           </div>
         </div>
@@ -206,7 +207,7 @@ export const PostCard = ({
             className="inline-block bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 rounded-full mb-3 cursor-pointer hover:bg-blue-200 transition"
             onClick={() =>
               post.category?.slug &&
-              router.push(`/category/${post.category.slug}`)
+              router.push(`${ROUTES.CATEGORY}/${post.category.slug}`)
             }
           >
             {post.category.name}

@@ -1,5 +1,5 @@
 "use client";
-import { CHAT_UI_STRINGS } from "@/constants/chat";
+import { CHAT_UI_STRINGS } from "@/constants/index";
 import { useChat } from "@/utils/context/ChatContext";
 import { getChatObjectMetadata } from "@/utils/helpers";
 import { PublicUser } from "@/types/user.type";

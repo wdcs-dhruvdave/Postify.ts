@@ -1,6 +1,5 @@
 "use client";
-import { CHAT_UI_STRINGS } from "@/constants/chat";
-import { errorMessages } from "@/constants/ui";
+import { CHAT_UI_STRINGS, errorMessages } from "@/constants/index";
 import { searchUsers } from "@/utils/Apis/userApi";
 import { PublicUser } from "@/types/user.type";
 import { useState } from "react";

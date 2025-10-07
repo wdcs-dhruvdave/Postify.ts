@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { TOKEN_KEY } from "@/constants/auth";
-import { socketEvents } from "@/constants/chat";
-import { NOTIFICATION_API_BASE_URL } from "@/constants/api";
+import {
+  TOKEN_KEY,
+  socketEvents,
+  NOTIFICATION_API_BASE_URL,
+  MESSAGES,
+} from "@/constants/index";
 
 export const useSocket = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -10,14 +13,14 @@ export const useSocket = () => {
   useEffect(() => {
     const socketUrl = NOTIFICATION_API_BASE_URL;
     if (!socketUrl) {
-      console.error("NEXT_PUBLIC_CHAT_SOCKET_URL is not defined in .env.local");
+      console.error(MESSAGES.ERROR.SOCKET_URL_NOT_DEFINED);
       return;
     }
 
     const token = localStorage.getItem(TOKEN_KEY);
 
     if (!token) {
-      console.log("No auth token found, socket connection not initiated.");
+      console.log(MESSAGES.SOCKET_LOGS.NO_TOKEN_WARNING);
       return;
     }
 
@@ -30,11 +33,11 @@ export const useSocket = () => {
     setSocket(newSocket);
 
     newSocket.on(socketEvents.CONNECT, () => {
-      console.log("Socket connected successfully:", newSocket.id);
+      console.log(MESSAGES.SOCKET_LOGS.CONNECTED_SUCCESSFULLY, newSocket.id);
     });
 
     newSocket.on(socketEvents.CONNECT_ERROR, (err) => {
-      console.error("Socket connection error:", err.message);
+      console.error(MESSAGES.SOCKET_LOGS.CONNECTION_ERROR, err.message);
     });
 
     return () => {

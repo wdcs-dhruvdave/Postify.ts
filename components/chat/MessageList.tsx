@@ -1,5 +1,5 @@
 "use client";
-import { CHAT_UI_STRINGS } from "@/constants/chat";
+import { CHAT_UI_STRINGS } from "@/constants/index";
 import { Message } from "@/types/chat.types";
 import { MessageBubble } from "./MessageBubble";
 

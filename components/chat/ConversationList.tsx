@@ -1,4 +1,4 @@
-import { CHAT_UI_STRINGS } from "@/constants/chat";
+import { CHAT_UI_STRINGS } from "@/constants/index";
 import { getConversations } from "@/utils/Apis/chatApi";
 import { useChat } from "@/utils/context/ChatContext";
 import { useEffect } from "react";

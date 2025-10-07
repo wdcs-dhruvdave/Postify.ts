@@ -1,7 +1,6 @@
 import axios from "axios";
 import { SignupForm, LoginForm } from "@/types/auth.types";
-import { BASE_URL, HEADERS, AUTH_API } from "@/constants/api";
-import { errorMessages } from "@/constants/ui";
+import { BASE_URL, HEADERS, AUTH_API, errorMessages } from "@/constants/index";
 
 const apiClient = axios.create({
   baseURL: BASE_URL,

@@ -1,6 +1,12 @@
 "use client";
-import { TOKEN_KEY } from "@/constants/auth";
-import { errorMessages } from "@/constants/ui";
+import {
+  MESSAGES,
+  PLACEHOLDERS,
+  LABELS,
+  ROUTES,
+  CONFIG,
+  TOKEN_KEY,
+} from "@/constants/index";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
@@ -9,9 +15,8 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { loginUser } from "@/utils/Apis/authApi";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginFormSchema } from "@/validations/login.form";
+import { loginFormSchema, LoginForm } from "@/validations/login.form";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { LoginForm } from "@/types/auth.types";
 
 export default function LoginPage() {
   const {
@@ -30,13 +35,13 @@ export default function LoginPage() {
       const response = await loginUser(data);
       localStorage.setItem(TOKEN_KEY, response.token);
       localStorage.setItem("user", JSON.stringify(response.user));
-      toast.success("Login successful!");
-      router.push("/feedpage");
+      toast.success(MESSAGES.SUCCESS.LOGIN_SUCCESSFUL);
+      router.push(ROUTES.FEED);
     } catch (err: unknown) {
       if (err instanceof Error) {
         toast.error(err.message);
       } else {
-        toast.error(errorMessages.generic);
+        toast.error(MESSAGES.ERROR.GENERIC);
       }
     }
   };
@@ -51,20 +56,21 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link
-            href="/"
+            href={ROUTES.HOME}
             className="inline-block text-4xl font-bold text-blue-600"
           >
             Postify
           </Link>
-          <p className="text-gray-500 mt-2">
-            Welcome back! Please enter your details.
-          </p>
+          <p className="text-gray-500 mt-2">{MESSAGES.AUTH.LOGIN_SUBTITLE}</p>
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{
+            duration: CONFIG.ANIMATION.DURATION_MEDIUM,
+            delay: CONFIG.ANIMATION.DELAY_SHORT,
+          }}
           className="bg-white p-8 rounded-xl shadow-lg border border-gray-200"
         >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -77,7 +83,7 @@ export default function LoginPage() {
                 type="email"
                 {...register("email")}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
-                placeholder="you@example.com"
+                placeholder={PLACEHOLDERS.EMAIL}
               />
               {errors.email && (
                 <p className="text-red-500 text-xs mt-1">
@@ -95,7 +101,7 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 {...register("password")}
                 className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
-                placeholder="••••••••"
+                placeholder={PLACEHOLDERS.PASSWORD}
               />
               <button
                 type="button"
@@ -116,7 +122,7 @@ export default function LoginPage() {
               className="w-full bg-blue-600 text-white py-2.5 rounded-md font-semibold hover:bg-blue-700 transition shadow-sm disabled:opacity-50"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Logging in..." : "Login"}
+              {isSubmitting ? LABELS.BUTTONS.LOGGING_IN : LABELS.BUTTONS.LOGIN}
             </button>
           </form>
 
@@ -138,12 +144,12 @@ export default function LoginPage() {
           </div> */}
 
           <p className="text-center text-sm text-gray-600 mt-8">
-            Don’t have an account?{" "}
+            {MESSAGES.AUTH.DONT_HAVE_ACCOUNT}{" "}
             <Link
-              href="/signup"
+              href={ROUTES.SIGNUP}
               className="font-semibold text-blue-600 hover:underline"
             >
-              Register
+              {LABELS.BUTTONS.REGISTER}
             </Link>
           </p>
         </motion.div>

@@ -1,17 +1,20 @@
-
-import { z } from 'zod';
+import { z } from "zod";
+import { VALIDATION } from "@/constants/index";
 
 export const loginFormSchema = z.object({
   email: z
     .string()
     .trim()
-    .email('Invalid email address')
+    .email(VALIDATION.EMAIL.MESSAGES.INVALID)
     .transform((val) => val.toLowerCase()),
 
   password: z
     .string()
-    .min(6, 'Password is required')
-    .max(20, 'Password must be at most 20 characters')
+    .min(VALIDATION.PASSWORD.MIN_LENGTH, VALIDATION.PASSWORD.MESSAGES.REQUIRED)
+    .max(
+      VALIDATION.PASSWORD.MAX_LENGTH,
+      VALIDATION.PASSWORD.MESSAGES.MAX_LENGTH,
+    )
     .trim(),
 
   rememberMe: z.boolean().optional(),

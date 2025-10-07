@@ -14,6 +14,7 @@ import {
   deletePost,
 } from "@/utils/Apis/postApi";
 import { isAuthenticated } from "@/utils/auth";
+import { MESSAGES } from "@/constants/index";
 
 type Mode = "feed" | "recommended" | "public";
 
@@ -55,7 +56,7 @@ export const usePosts = (isLoggedIn: boolean | null, mode: Mode = "feed") => {
         setHasNextPage(data.pagination.hasNextPage);
       } catch (error) {
         if (error instanceof Error) toast.error(error.message);
-        else toast.error("Could not fetch posts.");
+        else toast.error(MESSAGES.ERROR.FETCH_FAILED);
       } finally {
         setLoading(false);
       }
@@ -90,12 +91,12 @@ export const usePosts = (isLoggedIn: boolean | null, mode: Mode = "feed") => {
 
   const removePost = useCallback(
     async (postId: string) => {
-      if (!window.confirm("Are you sure you want to delete this post?")) return;
+      if (!window.confirm(MESSAGES.CONFIRMATIONS.DELETE_POST)) return;
       const originalPosts = posts;
       setPosts((prev) => prev.filter((p) => p.id !== postId)); // Optimistic update
       try {
         await deletePost(postId);
-        toast.success("Post deleted successfully.");
+        toast.success(MESSAGES.SUCCESS.POST_DELETED);
       } catch (error) {
         setPosts(originalPosts);
         if (error instanceof Error) toast.error(error.message);
@@ -105,7 +106,8 @@ export const usePosts = (isLoggedIn: boolean | null, mode: Mode = "feed") => {
   );
 
   const toggleLike = useCallback((postId: string) => {
-    if (!isAuthenticated()) return toast.error("Please log in to like posts.");
+    if (!isAuthenticated())
+      return toast.error(MESSAGES.ERROR.LOGIN_REQUIRED_LIKE);
 
     let originalPosts: Post[] = [];
     setPosts((currentPosts) => {
@@ -115,7 +117,7 @@ export const usePosts = (isLoggedIn: boolean | null, mode: Mode = "feed") => {
 
       const apiCall = post.user_has_liked ? unlikePost : likePost;
       apiCall(postId).catch(() => {
-        toast.error("Failed to update like.");
+        toast.error(MESSAGES.ERROR.LIKE_UPDATE_FAILED);
         setPosts(originalPosts);
       });
 
@@ -139,7 +141,7 @@ export const usePosts = (isLoggedIn: boolean | null, mode: Mode = "feed") => {
 
   const toggleDislike = useCallback((postId: string) => {
     if (!isAuthenticated())
-      return toast.error("Please log in to dislike posts.");
+      return toast.error(MESSAGES.ERROR.LOGIN_REQUIRED_DISLIKE);
     let originalPosts: Post[] = [];
     setPosts((currentPosts) => {
       originalPosts = [...currentPosts];
@@ -148,7 +150,7 @@ export const usePosts = (isLoggedIn: boolean | null, mode: Mode = "feed") => {
 
       const apiCall = post.user_has_disliked ? undislikePost : dislikePost;
       apiCall(postId).catch(() => {
-        toast.error("Failed to update dislike.");
+        toast.error(MESSAGES.ERROR.DISLIKE_UPDATE_FAILED);
         setPosts(originalPosts);
       });
 

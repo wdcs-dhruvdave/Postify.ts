@@ -7,10 +7,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { registerUser } from "@/utils/Apis/authApi";
-import { SignupForm } from "@/types/auth.types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signupFormSchema } from "@/validations/signup.form";
+import { signupFormSchema, RegisterForm } from "@/validations/signup.form";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import {
+  MESSAGES,
+  PLACEHOLDERS,
+  LABELS,
+  ROUTES,
+  CONFIG,
+} from "@/constants/index";
 
 export default function RegisterPage() {
   const {
@@ -18,24 +24,24 @@ export default function RegisterPage() {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<SignupForm>({
+  } = useForm<RegisterForm>({
     resolver: zodResolver(signupFormSchema),
   });
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const router = useRouter();
 
-  const onSubmit = async (data: SignupForm) => {
+  const onSubmit = async (data: RegisterForm) => {
     try {
       await registerUser(data);
-      toast.success("Registration successful! Please log in.");
+      toast.success(MESSAGES.SUCCESS.REGISTRATION_SUCCESSFUL);
       reset();
-      router.push("/login");
+      router.push(ROUTES.LOGIN);
     } catch (err: unknown) {
       if (err instanceof Error) {
         toast.error(err.message);
       } else {
-        toast.error("An unexpected error occurred.");
+        toast.error(MESSAGES.ERROR.UNEXPECTED_ERROR);
       }
     }
   };
@@ -50,20 +56,21 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link
-            href="/"
+            href={ROUTES.HOME}
             className="inline-block text-4xl font-bold text-blue-600"
           >
             Postify
           </Link>
-          <p className="text-gray-500 mt-2">
-            Create an account to join the community.
-          </p>
+          <p className="text-gray-500 mt-2">{MESSAGES.AUTH.SIGNUP_SUBTITLE}</p>
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{
+            duration: CONFIG.ANIMATION.DURATION_MEDIUM,
+            delay: CONFIG.ANIMATION.DELAY_SHORT,
+          }}
           className="bg-white p-8 rounded-xl shadow-lg border border-gray-200"
         >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -76,7 +83,7 @@ export default function RegisterPage() {
                 type="text"
                 {...register("username")}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
-                placeholder="Choose a username"
+                placeholder={PLACEHOLDERS.USERNAME}
               />
               {errors.username && (
                 <p className="text-red-500 text-xs mt-1">
@@ -94,7 +101,7 @@ export default function RegisterPage() {
                 type="email"
                 {...register("email")}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
-                placeholder="you@example.com"
+                placeholder={PLACEHOLDERS.EMAIL}
               />
               {errors.email && (
                 <p className="text-red-500 text-xs mt-1">
@@ -112,7 +119,7 @@ export default function RegisterPage() {
                 type={showPassword ? "text" : "password"}
                 {...register("password")}
                 className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
-                placeholder="••••••••"
+                placeholder={PLACEHOLDERS.PASSWORD}
               />
               <button
                 type="button"
@@ -133,17 +140,19 @@ export default function RegisterPage() {
               className="w-full bg-blue-600 text-white py-2.5 rounded-md font-semibold hover:bg-blue-700 transition shadow-sm disabled:opacity-50"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Creating Account..." : "Create Account"}
+              {isSubmitting
+                ? LABELS.BUTTONS.CREATING_ACCOUNT
+                : LABELS.BUTTONS.CREATE_ACCOUNT}
             </button>
           </form>
 
           <p className="text-center text-sm text-gray-600 mt-8">
-            Already have an account?{" "}
+            {MESSAGES.AUTH.ALREADY_HAVE_ACCOUNT}{" "}
             <Link
-              href="/login"
+              href={ROUTES.LOGIN}
               className="font-semibold text-blue-600 hover:underline"
             >
-              Login
+              {LABELS.BUTTONS.LOGIN}
             </Link>
           </p>
         </motion.div>

@@ -4,9 +4,11 @@ import {
   NOTIFICATION_API_BASE_URL,
   HEADERS,
   NOTIFICATION_API,
-} from "@/constants/api";
-import { TOKEN_KEY, AUTH_HEADER } from "@/constants/auth";
-import { errorMessages } from "@/constants/ui";
+  TOKEN_KEY,
+  AUTH_HEADER,
+  errorMessages,
+  MESSAGES,
+} from "@/constants/index";
 
 const apiClient = axios.create({
   baseURL: NOTIFICATION_API_BASE_URL,
@@ -49,7 +51,7 @@ export const markNotificationsAsRead = async () => {
     return response.data;
   } catch (error) {
     if (error instanceof Error) {
-      toast(error.message || "Failed to mark notifications as read.");
+      toast(error.message || MESSAGES.ERROR.NOTIFICATIONS_MARK_READ_FAILED);
     }
   }
 };

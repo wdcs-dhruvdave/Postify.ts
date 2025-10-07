@@ -4,6 +4,7 @@ import Footer from "@/components/layout/Footer";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { isAuthenticated } from "@/utils/auth";
+import { CONTENT, LABELS, ROUTES, CONFIG } from "@/constants/index";
 
 export default function HomePage() {
   const isAuth = isAuthenticated();
@@ -20,30 +21,29 @@ export default function HomePage() {
             className="text-5xl md:text-6xl font-extrabold mb-4 text-gray-900"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: CONFIG.ANIMATION.DELAY_SHORT }}
           >
-            Welcome to <span className="text-blue-600">Postify</span> 🚀
+            {CONTENT.HOMEPAGE.HERO.TITLE}
           </motion.h1>
 
           <motion.p
             className="text-lg text-gray-600 mb-8 px-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: CONFIG.ANIMATION.DELAY_MEDIUM }}
           >
-            Your modern social platform to post updates, connect with others,
-            and build your community.
+            {CONTENT.HOMEPAGE.HERO.SUBTITLE}
           </motion.p>
 
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: CONFIG.ANIMATION.DELAY_LONG }}
             className="mb-10"
           >
-            <Link href={isAuth ? "/feedpage" : "/feedpage"}>
+            <Link href={isAuth ? ROUTES.FEED : ROUTES.FEED}>
               <button className="px-6 py-3 bg-blue-600 text-white font-medium rounded-full shadow-lg hover:bg-blue-700 transition">
-                Get Started
+                {LABELS.BUTTONS.GET_STARTED}
               </button>
             </Link>
           </motion.div>
@@ -58,10 +58,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h3 className="text-xl font-semibold text-blue-700 mb-2">
-              📝 Create Posts
+              {CONTENT.HOMEPAGE.FEATURES.CREATE_POSTS.TITLE}
             </h3>
             <p className="text-gray-600">
-              Easily share your ideas and updates with the world.
+              {CONTENT.HOMEPAGE.FEATURES.CREATE_POSTS.DESCRIPTION}
             </p>
           </motion.div>
 
@@ -73,10 +73,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h3 className="text-xl font-semibold text-blue-700 mb-2">
-              👥 Follow Users
+              {CONTENT.HOMEPAGE.FEATURES.FOLLOW_USERS.TITLE}
             </h3>
             <p className="text-gray-600">
-              Connect and follow others to build your network.
+              {CONTENT.HOMEPAGE.FEATURES.FOLLOW_USERS.DESCRIPTION}
             </p>
           </motion.div>
 
@@ -88,10 +88,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h3 className="text-xl font-semibold text-blue-700 mb-2">
-              📸 Media Uploads
+              {CONTENT.HOMEPAGE.FEATURES.MEDIA_UPLOADS.TITLE}
             </h3>
             <p className="text-gray-600">
-              Attach images or videos to enrich your content.
+              {CONTENT.HOMEPAGE.FEATURES.MEDIA_UPLOADS.DESCRIPTION}
             </p>
           </motion.div>
 
@@ -103,10 +103,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h3 className="text-xl font-semibold text-blue-700 mb-2">
-              💬 Comments & Likes
+              {CONTENT.HOMEPAGE.FEATURES.COMMENTS_LIKES.TITLE}
             </h3>
             <p className="text-gray-600">
-              Engage with posts using likes and comments.
+              {CONTENT.HOMEPAGE.FEATURES.COMMENTS_LIKES.DESCRIPTION}
             </p>
           </motion.div>
 
@@ -118,10 +118,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h3 className="text-xl font-semibold text-blue-700 mb-2">
-              🔍 Explore Feed
+              {CONTENT.HOMEPAGE.FEATURES.EXPLORE_FEED.TITLE}
             </h3>
             <p className="text-gray-600">
-              Discover trending content and new creators.
+              {CONTENT.HOMEPAGE.FEATURES.EXPLORE_FEED.DESCRIPTION}
             </p>
           </motion.div>
 
@@ -133,10 +133,10 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <h3 className="text-xl font-semibold text-blue-700 mb-2">
-              🧑‍💼 User Profiles
+              {CONTENT.HOMEPAGE.FEATURES.USER_PROFILES.TITLE}
             </h3>
             <p className="text-gray-600">
-              Showcase your posts, followers, and info on your profile.
+              {CONTENT.HOMEPAGE.FEATURES.USER_PROFILES.DESCRIPTION}
             </p>
           </motion.div>
         </div>
@@ -149,31 +149,31 @@ export default function HomePage() {
           className="max-w-4xl mx-auto mt-20 text-center"
         >
           <h2 className="text-3xl font-bold text-gray-800 mb-6">
-            How Postify Works
+            {CONTENT.HOMEPAGE.HOW_IT_WORKS.TITLE}
           </h2>
           <div className="grid md:grid-cols-3 gap-6 text-left">
             <div className="bg-white p-5 rounded-lg shadow">
               <h4 className="font-semibold text-blue-600 mb-2">
-                1. Create an Account
+                {CONTENT.HOMEPAGE.HOW_IT_WORKS.STEPS.CREATE_ACCOUNT.TITLE}
               </h4>
               <p className="text-gray-600">
-                Sign up with your email and set up your profile in seconds.
+                {CONTENT.HOMEPAGE.HOW_IT_WORKS.STEPS.CREATE_ACCOUNT.DESCRIPTION}
               </p>
             </div>
             <div className="bg-white p-5 rounded-lg shadow">
               <h4 className="font-semibold text-blue-600 mb-2">
-                2. Start Posting
+                {CONTENT.HOMEPAGE.HOW_IT_WORKS.STEPS.START_POSTING.TITLE}
               </h4>
               <p className="text-gray-600">
-                Share text, media, and engage with the community instantly.
+                {CONTENT.HOMEPAGE.HOW_IT_WORKS.STEPS.START_POSTING.DESCRIPTION}
               </p>
             </div>
             <div className="bg-white p-5 rounded-lg shadow">
               <h4 className="font-semibold text-blue-600 mb-2">
-                3. Grow Your Network
+                {CONTENT.HOMEPAGE.HOW_IT_WORKS.STEPS.GROW_NETWORK.TITLE}
               </h4>
               <p className="text-gray-600">
-                Follow users, get followers, and expand your reach.
+                {CONTENT.HOMEPAGE.HOW_IT_WORKS.STEPS.GROW_NETWORK.DESCRIPTION}
               </p>
             </div>
           </div>
@@ -181,22 +181,24 @@ export default function HomePage() {
 
         <div className="max-w-4xl mx-auto mt-20 text-center">
           <h2 className="text-3xl font-bold text-gray-800 mb-6">
-            What Our Users Say
+            {CONTENT.HOMEPAGE.TESTIMONIALS.TITLE}
           </h2>
           <div className="grid md:grid-cols-2 gap-6 text-left">
             <div className="bg-blue-50 p-6 rounded-lg shadow">
               <p className="text-gray-700 mb-2 italic">
-                &quot;Postify is the easiest way I&apos;ve ever shared updates
-                and connected with my audience.”
+                {CONTENT.HOMEPAGE.TESTIMONIALS.USER1.QUOTE}
               </p>
-              <p className="font-semibold text-gray-800">– Aditi Sharma</p>
+              <p className="font-semibold text-gray-800">
+                {CONTENT.HOMEPAGE.TESTIMONIALS.USER1.AUTHOR}
+              </p>
             </div>
             <div className="bg-blue-50 p-6 rounded-lg shadow">
               <p className="text-gray-700 mb-2 italic">
-                &quot;It&apos;s like a mini social platform just for my niche
-                community. I love it!&quot;
+                {CONTENT.HOMEPAGE.TESTIMONIALS.USER2.QUOTE}
               </p>
-              <p className="font-semibold text-gray-800">– Karan Patel</p>
+              <p className="font-semibold text-gray-800">
+                {CONTENT.HOMEPAGE.TESTIMONIALS.USER2.AUTHOR}
+              </p>
             </div>
           </div>
         </div>
@@ -209,11 +211,11 @@ export default function HomePage() {
           viewport={{ once: true }}
         >
           <h2 className="text-3xl font-semibold mb-4 text-gray-800">
-            Ready to Join?
+            {CONTENT.HOMEPAGE.CTA.TITLE}
           </h2>
-          <Link href="/signup">
+          <Link href={ROUTES.SIGNUP}>
             <button className="px-8 py-3 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition shadow-lg">
-              Sign Up Now
+              {LABELS.BUTTONS.SIGN_UP_NOW}
             </button>
           </Link>
         </motion.div>

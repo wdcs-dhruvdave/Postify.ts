@@ -12,6 +12,7 @@ import {
   markNotificationsAsRead,
 } from "@/utils/Apis/notificationApi";
 import toast from "react-hot-toast";
+import { MESSAGES } from "@/constants/index";
 
 interface NotificationSender {
   username: string;
@@ -63,8 +64,9 @@ export const NotificationsProvider = ({
 
   const addNotification = useCallback((notification: Notification) => {
     setNotifications((prev) => [notification, ...prev]);
-    const sender = notification.sender?.username || "Someone";
-    toast.success(`Notification Received from ${sender}`);
+    const sender =
+      notification.sender?.username || MESSAGES.NOTIFICATIONS.DEFAULT_SENDER;
+    toast.success(MESSAGES.NOTIFICATIONS.RECEIVED_FROM(sender));
   }, []);
 
   useEffect(() => {
@@ -103,9 +105,7 @@ export const NotificationsProvider = ({
 export const useNotifications = () => {
   const context = useContext(NotificationsContext);
   if (!context) {
-    throw new Error(
-      "useNotifications must be used within a NotificationsProvider",
-    );
+    throw new Error(MESSAGES.CONTEXT_ERRORS.USE_NOTIFICATIONS_OUTSIDE_PROVIDER);
   }
   return context;
 };
