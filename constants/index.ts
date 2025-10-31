@@ -847,3 +847,82 @@ export const notificationEndpoints = {
   list: "/notifications",
   markRead: "/notifications/read",
 };
+
+// ====================== FCM CONFIGURATION ======================
+export const FCM_CONFIG = {
+  // Service Worker Configuration
+  SERVICE_WORKER: {
+    PATH: "/firebase-messaging-sw.js",
+    SCOPE: "/",
+    UPDATE_VIA_CACHE: "none" as ServiceWorkerUpdateViaCache,
+  },
+
+  // Notification Configuration
+  NOTIFICATIONS: {
+    PERMISSION_TIMEOUT: 10000,
+    RETRY_ATTEMPTS: 3,
+    DEFAULT_ICON: "/favicon.ico",
+    DEFAULT_BADGE: "/favicon.ico",
+    CLICK_ACTION: process.env.NEXT_PUBLIC_FCM_CLICK_ACTION || "/",
+    REQUIRE_INTERACTION: true,
+
+    // Notification Actions
+    ACTIONS: [
+      { action: "view", title: "View" },
+      { action: "dismiss", title: "Dismiss" },
+    ] as const,
+  },
+
+  // Toast Configuration
+  TOAST: {
+    DURATION: 5000,
+    POSITION: "top-right" as const,
+    SUCCESS_STYLE: {
+      background: "#10B981",
+      color: "#FFFFFF",
+    },
+    ERROR_STYLE: {
+      background: "#EF4444",
+      color: "#FFFFFF",
+    },
+  },
+
+  // API Endpoints
+  API_ENDPOINTS: {
+    TOKEN_SAVE: `${API.BASE_URL}/users/fcm-token`,
+    TOKEN_REMOVE: `${API.BASE_URL}/users/fcm-token`,
+    TOKEN_LIST: `${API.BASE_URL}/users/fcm-tokens`,
+    TEST_NOTIFICATION: `${API.BASE_URL}/users/test-notification`,
+  },
+
+  // Messages
+  MESSAGES: {
+    PERMISSION_GRANTED: "Push notifications enabled!",
+    PERMISSION_DENIED: "Notification permission denied",
+    INITIALIZATION_ERROR: "Failed to enable notifications",
+    TOKEN_REFRESH: "Notification settings updated",
+    SERVICE_WORKER_ERROR: "Failed to register service worker",
+    NOT_SUPPORTED: "Push notifications are not supported in this browser",
+
+    // Error Messages
+    ERRORS: {
+      UNSUPPORTED_BROWSER: "Your browser does not support push notifications",
+      PERMISSION_DENIED: "Please allow notifications to receive updates",
+      TOKEN_GENERATION_FAILED: "Failed to generate notification token",
+      NETWORK_ERROR: "Network error while setting up notifications",
+      SERVICE_WORKER_FAILED: "Failed to install notification service",
+    },
+  },
+
+  // Development Settings
+  DEBUG: process.env.NODE_ENV === "development",
+  VERBOSE_LOGGING: process.env.NODE_ENV === "development",
+
+  // Feature Flags
+  FEATURES: {
+    BACKGROUND_SYNC: true,
+    OFFLINE_SUPPORT: true,
+    TOKEN_REFRESH: true,
+    AUTOMATIC_RETRY: true,
+  },
+} as const;

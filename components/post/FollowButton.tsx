@@ -12,6 +12,12 @@ export const FollowButton = ({
 
   const handleToggleFollow = () => {
     // TODO: connect with backend API
+    console.log(
+      "Toggle follow for author:",
+      authorId,
+      "by user:",
+      currentUserId,
+    );
     setIsFollowing((prev) => !prev);
   };
 

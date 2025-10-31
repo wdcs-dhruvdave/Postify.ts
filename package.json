@@ -26,6 +26,7 @@
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.1.1",
     "axios": "^1.11.0",
+    "firebase": "^12.4.0",
     "framer-motion": "^12.23.6",
     "heroicons": "^2.2.0",
     "http": "^0.0.1-security",
